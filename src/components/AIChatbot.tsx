@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Camera, Send, MapPin, Clock, User, Bot, Upload, Phone, Mail } from 'lucide-react';
+import { Camera, Send, MapPin, Clock, User, Bot, Upload, Phone, Mail, UserPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Message {
@@ -26,12 +25,26 @@ interface OrderStatus {
   status: 'preparing' | 'picked_up' | 'on_the_way' | 'delivered';
 }
 
+interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+  isLoggedIn: boolean;
+}
+
 const AIChatbot: React.FC = () => {
   const { selectedLanguage, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [userHistory, setUserHistory] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    name: '',
+    email: '',
+    phone: '',
+    isLoggedIn: false
+  });
+  const [hasActiveOrder, setHasActiveOrder] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
   const [orderStatus, setOrderStatus] = useState<OrderStatus>({
     orderId: 'ORD-2024-001',
     medicines: ['Paracetamol 650mg', 'Cetrizine 10mg'],
@@ -53,31 +66,47 @@ const AIChatbot: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Initialize with welcome message
-    const welcomeMessage: Message = {
-      id: '1',
-      type: 'bot',
-      content: getWelcomeMessage(),
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
-  }, [selectedLanguage]);
+    if (userProfile.isLoggedIn) {
+      const welcomeMessage: Message = {
+        id: '1',
+        type: 'bot',
+        content: getWelcomeMessage(),
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
+    }
+  }, [selectedLanguage, userProfile.isLoggedIn]);
 
   const getWelcomeMessage = () => {
+    const userName = userProfile.name || 'User';
     const welcomeMessages = {
-      english: "Hello! I'm your AI health assistant. How can I help you today? I can track your medicine orders, analyze prescriptions, and provide health advice.",
-      hindi: "नमस्ते! मैं आपका AI स्वास्थ्य सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं? मैं आपकी दवाओं के ऑर्डर ट्रैक कर सकता हूं, प्रिस्क्रिप्शन का विश्लेषण कर सकता हूं और स्वास्थ्य सलाह दे सकता हूं।",
-      marathi: "नमस्कार! मी तुमचा AI आरोग्य सहाय्यक आहे। आज मी तुमची कशी मदत करू शकतो? मी तुमच्या औषधांचे ऑर्डर ट्रॅक करू शकतो, प्रिस्क्रिप्शनचे विश्लेषण करू शकतो आणि आरोग्य सल्ला देऊ शकतो।",
-      gujarati: "નમસ્તે! હું તમારો AI આરોગ્య સહાયક છું. આજે હું તમારી કેવી રીતે મદદ કરી શકું? હું તમારી દવાઓના ઓર્ડર ટ્રૅક કરી શકું છું, પ્રિસ્ક્રિપ્શનનું વિશ્લેષણ કરી શકું છું અને આરોગ્ય સલાહ આપી શકું છું।"
+      english: `Hello ${userName}! I'm your AI health assistant. How can I help you today? I can analyze prescriptions, provide health advice, and help with medicine orders.`,
+      hindi: `नमस्ते ${userName}! मैं आपका AI स्वास्थ्य सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं? मैं प्रिस्क्रिप्शन का विश्लेषण कर सकता हूं, स्वास्थ्य सलाह दे सकता हूं और दवाओं के ऑर्डर में मदद कर सकता हूं।`,
+      marathi: `नमस्कार ${userName}! मी तुमचा AI आरोग्य सहाय्यक आहे। आज मी तुमची कशी मदत करू शकतो? मी प्रिस्क्रिप्शनचे विश्लेषण करू शकतो, आरोग्य सल्ला देऊ शकतो आणि औषधांच्या ऑर्डरमध्ये मदत करू शकतो।`,
+      gujarati: `નમસ્તે ${userName}! હું તમારો AI આરોગ્ય સહાયક છું। આજે હું તમારી કેવી રીતે મદદ કરી શકું? હું પ્રિસ્ક્રિપ્શનનું વિશ્લેષણ કરી શકું છું, આરોગ્ય સલાહ આપી શકું છું અને દવાઓના ઓર્ડરમાં મદદ કરી શકું છું।`
     };
     return welcomeMessages[selectedLanguage] || welcomeMessages.english;
+  };
+
+  const handleSignup = (name: string, email: string, phone: string) => {
+    setUserProfile({
+      name,
+      email,
+      phone,
+      isLoggedIn: true
+    });
+    setShowSignup(false);
   };
 
   const generateBotResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
     
     if (lowerMessage.includes('order') || lowerMessage.includes('track') || lowerMessage.includes('delivery')) {
-      return getOrderTrackingResponse();
+      if (hasActiveOrder) {
+        return getOrderTrackingResponse();
+      } else {
+        return getNoOrderResponse();
+      }
     }
     
     if (lowerMessage.includes('feeling') || lowerMessage.includes('better') || lowerMessage.includes('health')) {
@@ -93,6 +122,16 @@ const AIChatbot: React.FC = () => {
     }
     
     return getGeneralResponse();
+  };
+
+  const getNoOrderResponse = () => {
+    const responses = {
+      english: "You don't have any active orders at the moment. Would you like me to help you place a new medicine order?",
+      hindi: "इस समय आपका कोई सक्रिय ऑर्डर नहीं है। क्या आप चाहते हैं कि मैं आपको नया दवा ऑर्डर करने में मदद करूं?",
+      marathi: "या क્ષणी तुमचा कोणताही सक्रिय ऑर्डर नाही। तुम्हाला नवीन औषध ऑर्डर करण्यासाठी मदत हवी आहे का?",
+      gujarati: "આ ક્ષણે તમારો કોઈ સક્રિય ઓર્ડર નથી. શું તમે ઇચ્છો છો કે હું તમને નવો દવાઓનો ઓર્ડર કરવામાં મદદ કરું?"
+    };
+    return responses[selectedLanguage] || responses.english;
   };
 
   const getOrderTrackingResponse = () => {
@@ -137,10 +176,10 @@ const AIChatbot: React.FC = () => {
 
   const getGeneralResponse = () => {
     const responses = {
-      english: "I'm here to help with your health needs. You can ask me about symptoms, medicines, order tracking, or upload prescriptions for analysis.",
-      hindi: "मैं आपकी स्वास्थ्य आवश्यकताओं में मदद के लिए यहां हूं। आप मुझसे लक्षणों, दवाओं, ऑर्डर ट्रैकिंग के बारे में पूछ सकते हैं या विश्लेषण के लिए प्रिस्क्रिप्शन अपलोड कर सकते हैं।",
-      marathi: "मी तुमच्या आरोग्य गरजांमध्ये मदत करण्यासाठी येथे आहे। तुम्ही माझ्याकडे लक्षणे, औषधे, ऑर्डर ट्रॅकिंग बद्दल विचारू शकता किंवा विश्लेषणासाठी प्रिस्क्रिप्शन अपलोड करू शकता।",
-      gujarati: "હું તમારી આરોગ્ય જરૂરિયાતોમાં મદદ કરવા માટે અહીં છું. તમે મને લક્ષણો, દવાઓ, ઓર્ડર ટ્રૅકિંગ વિશે પૂછી શકો છો અથવા વિશ્લેષણ માટે પ્રિસ્ક્રિપ્શન અપલોડ કરી શકો છો."
+      english: "I'm here to help with your health needs. You can ask me about symptoms, medicines, or upload prescriptions for analysis.",
+      hindi: "मैं आपकी स्वास्थ्य आवश्यकताओं में मदद के लिए यहां हूं। आप मुझसे लक्षणों, दवाओं के बारे में पूछ सकते हैं या विश्लेषण के लिए प्रिस्क्रिप्शन अपलोड कर सकते हैं।",
+      marathi: "मी तुमच्या आरोग्य गरजांमध्ये मदत करण्यासाठी येथे आहे। तुम्ही माझ्याकडे लक्षणे, औषधे बद्दल विचारू शकता किंवा विश्लेषणासाठी प्रिस्क्रिप्शन अपलोड करू शकता।",
+      gujarati: "હું તમારી આરોગ્ય જરૂરિયાતોમાં મદદ કરવા માટે અહીં છું. તમે મને લક્ષણો, દવાઓ વિશે પૂછી શકો છો અથવા વિશ્લેષણ માટે પ્રિસ્ક્રિપ્શન અપલોડ કરી શકો છો."
     };
     return responses[selectedLanguage] || responses.english;
   };
@@ -159,7 +198,6 @@ const AIChatbot: React.FC = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate bot response delay
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -195,9 +233,59 @@ const AIChatbot: React.FC = () => {
         };
         setMessages(prev => [...prev, analysisResponse]);
         setIsTyping(false);
+        setHasActiveOrder(true);
       }, 2000);
     }
   };
+
+  if (!userProfile.isLoggedIn) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-blue-600" />
+            AI Health Assistant
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col justify-center items-center">
+          <div className="text-center mb-6">
+            <UserPlus className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Welcome to Aasha AI Seva</h3>
+            <p className="text-gray-600 mb-4">Please sign up to get personalized health assistance</p>
+          </div>
+          <Button onClick={() => setShowSignup(true)} className="w-full">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Sign Up to Continue
+          </Button>
+          
+          {showSignup && (
+            <div className="mt-6 w-full space-y-4">
+              <Input
+                placeholder="Your Name"
+                onChange={(e) => setUserProfile(prev => ({...prev, name: e.target.value}))}
+              />
+              <Input
+                placeholder="Email"
+                type="email"
+                onChange={(e) => setUserProfile(prev => ({...prev, email: e.target.value}))}
+              />
+              <Input
+                placeholder="Phone Number"
+                onChange={(e) => setUserProfile(prev => ({...prev, phone: e.target.value}))}
+              />
+              <Button 
+                onClick={() => handleSignup(userProfile.name, userProfile.email, userProfile.phone)}
+                className="w-full"
+                disabled={!userProfile.name || !userProfile.email || !userProfile.phone}
+              >
+                Complete Signup
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full flex flex-col">
@@ -205,23 +293,26 @@ const AIChatbot: React.FC = () => {
         <CardTitle className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-blue-600" />
           AI Health Assistant
+          <Badge variant="secondary" className="ml-auto">{userProfile.name}</Badge>
         </CardTitle>
         
-        {/* Order Tracking Widget */}
-        <div className="bg-green-50 p-3 rounded-lg mt-2">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium">Live Order Tracking</span>
-          </div>
-          <div className="text-xs text-gray-600 space-y-1">
-            <div>Order: {orderStatus.orderId}</div>
-            <div>Partner: {orderStatus.deliveryPartner}</div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>Arriving in {orderStatus.estimatedTime} mins</span>
+        {/* Order Tracking Widget - Only show if user has active order */}
+        {hasActiveOrder && (
+          <div className="bg-green-50 p-3 rounded-lg mt-2">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium">Live Order Tracking</span>
+            </div>
+            <div className="text-xs text-gray-600 space-y-1">
+              <div>Order: {orderStatus.orderId}</div>
+              <div>Partner: {orderStatus.deliveryPartner}</div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                <span>Arriving in {orderStatus.estimatedTime} mins</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Customer Support */}
         <div className="bg-blue-50 p-3 rounded-lg mt-2">
