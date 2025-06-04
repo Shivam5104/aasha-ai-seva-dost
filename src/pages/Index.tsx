@@ -10,6 +10,7 @@ import SymptomChecker from '@/components/SymptomChecker';
 import MedicineDelivery from '@/components/MedicineDelivery';
 import VoiceCall from '@/components/VoiceCall';
 import DoctorSchedule from '@/components/DoctorSchedule';
+import AIChatbot from '@/components/AIChatbot';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
@@ -79,7 +80,7 @@ const Index = () => {
             </div>
 
             {/* Features Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
               {features.map((feature, index) => (
                 <Card key={index} className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => setActiveTab(feature.tab)}>
                   <CardHeader className="text-center pb-4">
@@ -218,9 +219,21 @@ const Index = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content with Chatbot */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {renderContent()}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* AI Chatbot - Left Side */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <AIChatbot />
+            </div>
+          </div>
+
+          {/* Main Content - Right Side */}
+          <div className="lg:col-span-3">
+            {renderContent()}
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
