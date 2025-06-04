@@ -10,35 +10,36 @@ import SymptomChecker from '@/components/SymptomChecker';
 import MedicineDelivery from '@/components/MedicineDelivery';
 import VoiceCall from '@/components/VoiceCall';
 import DoctorSchedule from '@/components/DoctorSchedule';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const { selectedLanguage, setSelectedLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('home');
   const navigate = useNavigate();
 
   const features = [
     {
       icon: <Stethoscope className="w-8 h-8 text-blue-600" />,
-      title: "AI Doctor Consultation",
-      description: "Get instant medical advice based on your symptoms",
+      title: t('aiConsultation'),
+      description: t('aiConsultationDesc'),
       tab: "symptoms"
     },
     {
       icon: <Pill className="w-8 h-8 text-green-600" />,
-      title: "Medicine Delivery",
-      description: "Order prescribed medicines with same-day delivery",
+      title: t('medicineDelivery'),
+      description: t('medicineDeliveryDesc'),
       tab: "delivery"
     },
     {
       icon: <Phone className="w-8 h-8 text-purple-600" />,
-      title: "Voice Support",
-      description: "Call in your native language for assistance",
+      title: t('voiceSupportTitle'),
+      description: t('voiceSupportDesc'),
       tab: "voice"
     },
     {
       icon: <Clock className="w-8 h-8 text-orange-600" />,
-      title: "Doctor Appointments",
-      description: "Schedule same-day consultations with doctors",
+      title: t('doctorAppointments'),
+      description: t('doctorAppointmentsDesc'),
       tab: "schedule"
     }
   ];
@@ -64,17 +65,16 @@ const Index = () => {
                 </div>
               </div>
               <h1 className="text-4xl font-bold text-gray-800 mb-4">
-                AI Doctor - Your Health Assistant
+                {t('heroTitle')}
               </h1>
               <p className="text-xl text-gray-600 mb-6 max-w-3xl mx-auto">
-                Get instant medical advice, order medicines, and connect with doctors in your native language. 
-                Supporting rural and urban communities across India.
+                {t('heroDescription')}
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">24/7 Available</Badge>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">15+ Languages</Badge>
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800">Same Day Delivery</Badge>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800">Voice Support</Badge>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">{t('available24_7')}</Badge>
+                <Badge variant="secondary" className="bg-green-100 text-green-800">{t('languages15')}</Badge>
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800">{t('sameDayDelivery')}</Badge>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">{t('voiceSupport')}</Badge>
               </div>
             </div>
 
@@ -100,21 +100,21 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="text-red-700 flex items-center gap-2">
                   <Bell className="w-5 h-5" />
-                  Emergency Services
+                  {t('emergencyServices')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-red-600 mb-4">
-                  For medical emergencies, please call 108 (National Ambulance Service) or visit the nearest hospital immediately.
+                  {t('emergencyDesc')}
                 </p>
                 <div className="flex gap-4">
                   <Button variant="destructive" className="flex-1">
                     <Phone className="w-4 h-4 mr-2" />
-                    Call Emergency (108)
+                    {t('callEmergency')}
                   </Button>
                   <Button variant="outline" className="flex-1">
                     <MapPin className="w-4 h-4 mr-2" />
-                    Find Nearest Hospital
+                    {t('findHospital')}
                   </Button>
                 </div>
               </CardContent>
@@ -124,19 +124,19 @@ const Index = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">50K+</div>
-                <div className="text-sm text-blue-800">Consultations</div>
+                <div className="text-sm text-blue-800">{t('consultations')}</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">15+</div>
-                <div className="text-sm text-green-800">Languages</div>
+                <div className="text-sm text-green-800">{t('languages15')}</div>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">24/7</div>
-                <div className="text-sm text-purple-800">Available</div>
+                <div className="text-sm text-purple-800">{t('available24_7')}</div>
               </div>
               <div className="bg-orange-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-orange-600">2Hr</div>
-                <div className="text-sm text-orange-800">Avg Delivery</div>
+                <div className="text-sm text-orange-800">{t('avgDelivery')}</div>
               </div>
             </div>
           </div>
@@ -155,8 +155,8 @@ const Index = () => {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-xl text-gray-800">AI Doctor</h1>
-                <p className="text-sm text-gray-600">Healthcare Made Simple</p>
+                <h1 className="font-bold text-xl text-gray-800">{t('appTitle')}</h1>
+                <p className="text-sm text-gray-600">{t('appSubtitle')}</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -166,7 +166,7 @@ const Index = () => {
               />
               <Button variant="outline" size="sm">
                 <User className="w-4 h-4 mr-2" />
-                Profile
+                {t('profile')}
               </Button>
             </div>
           </div>
@@ -183,35 +183,35 @@ const Index = () => {
                 size="sm"
                 onClick={() => setActiveTab('home')}
               >
-                Home
+                {t('home')}
               </Button>
               <Button 
                 variant={activeTab === 'symptoms' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setActiveTab('symptoms')}
               >
-                Symptom Checker
+                {t('symptomChecker')}
               </Button>
               <Button 
                 variant={activeTab === 'delivery' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setActiveTab('delivery')}
               >
-                Medicine Delivery
+                {t('medicineDelivery')}
               </Button>
               <Button 
                 variant={activeTab === 'voice' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setActiveTab('voice')}
               >
-                Voice Support
+                {t('voiceSupportTitle')}
               </Button>
               <Button 
                 variant={activeTab === 'schedule' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setActiveTab('schedule')}
               >
-                Doctor Schedule
+                {t('schedule')}
               </Button>
             </div>
           </div>
@@ -226,9 +226,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="mb-2">AI Doctor - Serving communities across India</p>
+          <p className="mb-2">{t('footerText')}</p>
           <p className="text-gray-400 text-sm">
-            Emergency: 108 | Customer Support: 1800-XXX-XXXX
+            {t('footerContact')}
           </p>
         </div>
       </footer>
