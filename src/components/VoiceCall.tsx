@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Phone, PhoneCall, Mic, MicOff, Volume2, Clock, User, MapPin, HelpCircle } from 'lucide-react';
+import { ttsService } from '@/services/textToSpeech';
 
 interface VoiceCallProps {
   language: string;
@@ -16,6 +17,20 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [callDuration, setCallDuration] = useState(0);
   const [supportRequest, setSupportRequest] = useState(null);
   const [callPhase, setCallPhase] = useState('welcome'); // welcome, menu, connecting, connected
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
+  // Voice IDs for ElevenLabs
+  const voiceIds = {
+    female: {
+      'Dr. Priya Sharma': 'EXAVITQu4vr4xnSDxMaL', // Sarah
+      'Nurse Sunita': '9BWtsMINqrJLrRacOk9x', // Aria
+    },
+    male: {
+      'Dr. Rajesh Kumar': 'onwK4e9ZLuTAKqWW03F9', // Daniel
+      'Dr. Amit Patel': 'TX3LPaxmHKxFdv7VOQHJ', // Liam
+    }
+  };
 
   // ... keep existing code (supportTypes array)
 
@@ -82,14 +97,46 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }
   ];
 
+  const playWelcomeMessage = async (staff: any) => {
+    if (apiKey) {
+      ttsService.setApiKey(apiKey);
+    }
+    
+    const voiceId = staff.gender === 'female' 
+      ? voiceIds.female[staff.name as keyof typeof voiceIds.female]
+      : voiceIds.male[staff.name as keyof typeof voiceIds.male];
+    
+    await ttsService.speak(staff.welcomeMessage, voiceId);
+  };
+
+  const playMenuOptions = async () => {
+    const menuMessage = "Please select an option: Press 1 for medicines intake queries, Press 2 for home visit regarding queries";
+    await ttsService.speak(menuMessage, selectedStaff ? 
+      (selectedStaff.gender === 'female' 
+        ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
+        : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male]
+      ) : 'EXAVITQu4vr4xnSDxMaL'
+    );
+  };
+
   const startCall = (type: string, staff?: any) => {
     setCallType(type);
     setSelectedStaff(staff);
     setIsCallActive(true);
     setCallPhase('welcome');
     
+    // Play welcome message
+    if (staff) {
+      setTimeout(() => playWelcomeMessage(staff), 1000);
+    }
+    
     // Simulate call phases
-    setTimeout(() => setCallPhase('menu'), 3000);
+    setTimeout(() => {
+      setCallPhase('menu');
+      if (staff) {
+        setTimeout(() => playMenuOptions(), 500);
+      }
+    }, 3000);
     
     const timer = setInterval(() => {
       setCallDuration(prev => prev + 1);
@@ -108,6 +155,13 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
   const handleMenuOption = (option: number) => {
     setCallPhase('connecting');
+    
+    const responseMessage = option === 1 
+      ? "Connecting you to our medicine specialist. Please hold."
+      : "Connecting you to our home visit coordinator. Please hold.";
+    
+    ttsService.speak(responseMessage);
+    
     setTimeout(() => setCallPhase('connected'), 2000);
   };
 
@@ -265,6 +319,47 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* ElevenLabs API Key Input */}
+          {!apiKey && (
+            <Card className="bg-yellow-50 border-yellow-200">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-yellow-800">Enhanced Voice Experience</h4>
+                  <p className="text-sm text-yellow-600">
+                    Add your ElevenLabs API key for high-quality AI voices (optional)
+                  </p>
+                  {showApiKeyInput ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        placeholder="Enter ElevenLabs API key"
+                        className="flex-1 px-3 py-2 border rounded-lg"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                      />
+                      <Button onClick={() => {
+                        if (apiKey) {
+                          ttsService.setApiKey(apiKey);
+                          setShowApiKeyInput(false);
+                        }
+                      }}>
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowApiKeyInput(true)}
+                      size="sm"
+                    >
+                      Add API Key
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Medicine Delivery Helpline */}
           <Card className="bg-orange-50 border-orange-200">
             <CardContent className="p-4">
@@ -277,7 +372,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   <p className="text-sm text-orange-600">Direct support for medicine delivery queries</p>
                   <p className="text-sm font-medium text-orange-800 mt-1">📞 +91 98765-43210</p>
                 </div>
-                <Button className="bg-orange-600 hover:bg-orange-700">
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={() => window.open('tel:+919876543210', '_self')}
+                >
                   <Phone className="w-4 h-4 mr-2" />
                   Call Now
                 </Button>
@@ -440,7 +538,11 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   <h4 className="font-medium text-red-800">Emergency Medical Support</h4>
                   <p className="text-sm text-red-600">24/7 emergency assistance available</p>
                 </div>
-                <Button variant="destructive" size="lg">
+                <Button 
+                  variant="destructive" 
+                  size="lg"
+                  onClick={() => window.open('tel:108', '_self')}
+                >
                   <Phone className="w-4 h-4 mr-2" />
                   Emergency Call
                 </Button>
