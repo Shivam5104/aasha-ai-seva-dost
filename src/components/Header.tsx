@@ -5,7 +5,7 @@ import { User, Bell, Menu } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import { LoginDialog } from './auth/LoginDialog';
 import { UserProfile } from './auth/UserProfile';
-import { LanguageSelector } from './LanguageSelector';
+import LanguageSelector from './LanguageSelector';
 import {
   Popover,
   PopoverContent,
@@ -33,7 +33,10 @@ export function Header() {
 
           {/* Right side buttons */}
           <div className="flex items-center space-x-4">
-            <LanguageSelector />
+            <LanguageSelector 
+              selectedLanguage="english" 
+              onLanguageChange={(lang) => console.log('Language changed:', lang)} 
+            />
             
             {user ? (
               <div className="flex items-center space-x-3">

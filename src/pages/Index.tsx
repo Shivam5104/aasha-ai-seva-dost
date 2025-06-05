@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { LocationPermission } from "@/components/LocationPermission";
-import { SymptomChecker } from "@/components/SymptomChecker";
-import { AIChatbot } from "@/components/AIChatbot";
-import { MedicineDelivery } from "@/components/MedicineDelivery";
-import { DoctorSchedule } from "@/components/DoctorSchedule";
-import { VoiceCall } from "@/components/VoiceCall";
+import LocationPermission from "@/components/LocationPermission";
+import SymptomChecker from "@/components/SymptomChecker";
+import AIChatbot from "@/components/AIChatbot";
+import MedicineDelivery from "@/components/MedicineDelivery";
+import DoctorSchedule from "@/components/DoctorSchedule";
+import VoiceCall from "@/components/VoiceCall";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Heart, Pill, Calendar, Phone, MapPin } from "lucide-react";
 
