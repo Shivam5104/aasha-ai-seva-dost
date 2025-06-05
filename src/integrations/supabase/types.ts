@@ -9,7 +9,147 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          created_at: string | null
+          doctor_name: string
+          id: string
+          notes: string | null
+          specialization: string
+          status: string | null
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          created_at?: string | null
+          doctor_name: string
+          id?: string
+          notes?: string | null
+          specialization: string
+          status?: string | null
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          created_at?: string | null
+          doctor_name?: string
+          id?: string
+          notes?: string | null
+          specialization?: string
+          status?: string | null
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          delivery_address: string
+          estimated_delivery: string | null
+          id: string
+          medicines: Json
+          order_number: string
+          status: string | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_address: string
+          estimated_delivery?: string | null
+          id?: string
+          medicines: Json
+          order_number: string
+          status?: string | null
+          total_amount: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          delivery_address?: string
+          estimated_delivery?: string | null
+          id?: string
+          medicines?: Json
+          order_number?: string
+          status?: string | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          allergies: string[] | null
+          city: string | null
+          created_at: string | null
+          current_medications: string[] | null
+          date_of_birth: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          full_name: string | null
+          gender: string | null
+          id: string
+          medical_conditions: string[] | null
+          phone: string | null
+          pincode: string | null
+          preferred_language: string | null
+          state: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          allergies?: string[] | null
+          city?: string | null
+          created_at?: string | null
+          current_medications?: string[] | null
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id: string
+          medical_conditions?: string[] | null
+          phone?: string | null
+          pincode?: string | null
+          preferred_language?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          allergies?: string[] | null
+          city?: string | null
+          created_at?: string | null
+          current_medications?: string[] | null
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string
+          medical_conditions?: string[] | null
+          phone?: string | null
+          pincode?: string | null
+          preferred_language?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
