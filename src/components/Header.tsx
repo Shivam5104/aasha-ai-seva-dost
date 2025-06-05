@@ -6,6 +6,7 @@ import { useAuth } from './auth/AuthProvider';
 import { LoginDialog } from './auth/LoginDialog';
 import { UserProfile } from './auth/UserProfile';
 import LanguageSelector from './LanguageSelector';
+import { ThemeToggle } from './ThemeToggle';
 import {
   Popover,
   PopoverContent,
@@ -18,16 +19,16 @@ export function Header() {
   const [showUserProfile, setShowUserProfile] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-blue-600">
+              <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 Aasha AI Seva
               </h1>
-              <p className="text-xs text-gray-500">Your Health Companion</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Your Health Companion</p>
             </div>
           </div>
 
@@ -37,6 +38,8 @@ export function Header() {
               selectedLanguage="english" 
               onLanguageChange={(lang) => console.log('Language changed:', lang)} 
             />
+            
+            <ThemeToggle />
             
             {user ? (
               <div className="flex items-center space-x-3">
