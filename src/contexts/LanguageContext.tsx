@@ -12,20 +12,32 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const languageFonts = {
   english: 'font-sans',
-  hindi: 'font-serif',
-  marathi: 'font-serif', 
-  telugu: 'font-serif',
-  kannada: 'font-serif',
-  bhojpuri: 'font-serif',
-  kashmiri: 'font-serif',
-  odia: 'font-serif',
-  gujarati: 'font-serif',
-  punjabi: 'font-serif',
-  bengali: 'font-serif',
-  tamil: 'font-serif',
-  malayalam: 'font-serif',
-  assamese: 'font-serif',
-  urdu: 'font-serif'
+  hindi: 'font-hindi',
+  marathi: 'font-hindi', 
+  telugu: 'font-telugu',
+  kannada: 'font-kannada',
+  bhojpuri: 'font-hindi',
+  kashmiri: 'font-hindi',
+  odia: 'font-odia',
+  gujarati: 'font-gujarati',
+  punjabi: 'font-punjabi',
+  bengali: 'font-bengali',
+  tamil: 'font-tamil',
+  malayalam: 'font-malayalam',
+  assamese: 'font-bengali',
+  urdu: 'font-urdu'
+};
+
+// Add Google Fonts link dynamically
+const addGoogleFonts = () => {
+  const existingLink = document.getElementById('google-fonts');
+  if (!existingLink) {
+    const link = document.createElement('link');
+    link.id = 'google-fonts';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Oriya:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+Gurmukhi:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap';
+    document.head.appendChild(link);
+  }
 };
 
 const translations = {
@@ -61,14 +73,27 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const applyFont = (lang: string) => {
     const fontClass = languageFonts[lang as keyof typeof languageFonts] || 'font-sans';
     
+    // Add Google Fonts
+    addGoogleFonts();
+    
     // Remove all existing font classes
-    document.documentElement.classList.remove('font-sans', 'font-serif', 'font-mono');
+    document.documentElement.classList.remove(
+      'font-sans', 'font-serif', 'font-mono', 
+      'font-hindi', 'font-telugu', 'font-kannada', 'font-odia',
+      'font-gujarati', 'font-punjabi', 'font-bengali', 'font-tamil',
+      'font-malayalam', 'font-urdu'
+    );
     
     // Add the new font class
     document.documentElement.classList.add(fontClass);
     
     // Also apply to body for better coverage
-    document.body.classList.remove('font-sans', 'font-serif', 'font-mono');
+    document.body.classList.remove(
+      'font-sans', 'font-serif', 'font-mono',
+      'font-hindi', 'font-telugu', 'font-kannada', 'font-odia',
+      'font-gujarati', 'font-punjabi', 'font-bengali', 'font-tamil',
+      'font-malayalam', 'font-urdu'
+    );
     document.body.classList.add(fontClass);
     
     console.log('Font applied:', fontClass, 'for language:', lang);

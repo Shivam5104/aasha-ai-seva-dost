@@ -45,22 +45,22 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
 
     setIsAnalyzing(true);
     
-    // Use the enhanced medical knowledge base
     setTimeout(() => {
       const condition = findEnhancedMedicalCondition(symptoms);
       
       if (condition) {
+        // Create a proper diagnosis object with all required fields
         const mockDiagnosis = {
-          condition: symptoms.toLowerCase().includes('fever') ? "Fever with Associated Symptoms" :
+          condition: symptoms.toLowerCase().includes('fever') ? "Fever and Associated Symptoms" :
                    symptoms.toLowerCase().includes('headache') ? "Tension Headache/Migraine" :
                    symptoms.toLowerCase().includes('cough') ? "Respiratory Tract Infection" :
                    symptoms.toLowerCase().includes('diabetes') ? "Diabetes Management" :
-                   symptoms.toLowerCase().includes('blood pressure') ? "Hypertension" : 
-                   "General Health Concern",
+                   symptoms.toLowerCase().includes('blood pressure') || symptoms.toLowerCase().includes('hypertension') ? "Hypertension Management" : 
+                   "Health Concern Requiring Medical Attention",
           severity: condition.severity.charAt(0).toUpperCase() + condition.severity.slice(1),
           confidence: "85%",
-          remedies: condition.homeRemedies,
-          medicines: condition.medicines.map(med => ({
+          remedies: condition.homeRemedies || ['Consult with healthcare professional', 'Rest and hydration', 'Monitor symptoms'],
+          medicines: condition.medicines?.map(med => ({
             name: med.name,
             dosage: med.dosage,
             frequency: med.frequency,
@@ -68,9 +68,9 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
             instructions: med.instructions,
             sideEffects: med.sideEffects || [],
             price: med.price
-          })),
-          warning: condition.warnings.join('. '),
-          followUp: condition.whenToSeeDoctor.join('. '),
+          })) || [],
+          warning: condition.warnings?.join('. ') || 'Consult healthcare professional for proper diagnosis',
+          followUp: condition.whenToSeeDoctor?.join('. ') || 'Schedule follow-up if symptoms persist',
           patientInfo: {
             age,
             gender,
@@ -79,19 +79,38 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
           }
         };
         
+        console.log('Setting diagnosis:', mockDiagnosis);
         setDiagnosis(mockDiagnosis);
       } else {
-        // Fallback for unrecognized symptoms
-        setDiagnosis({
-          condition: "Symptoms require professional evaluation",
+        // Enhanced fallback with general health advice
+        const fallbackDiagnosis = {
+          condition: "Symptoms require professional medical evaluation",
           severity: "Unknown",
           confidence: "N/A",
-          remedies: ["Consult with a healthcare professional", "Monitor symptoms", "Rest and hydration"],
-          medicines: [],
-          warning: "These symptoms require proper medical evaluation for accurate diagnosis",
-          followUp: "Schedule a consultation with our doctors for proper diagnosis and treatment",
+          remedies: [
+            "Consult with a healthcare professional for accurate diagnosis",
+            "Monitor symptoms and note any changes",
+            "Rest and maintain adequate hydration",
+            "Avoid self-medication without professional guidance"
+          ],
+          medicines: [
+            {
+              name: "General Health Support",
+              dosage: "As recommended by doctor",
+              frequency: "As prescribed",
+              duration: "As needed",
+              instructions: "Please consult with our healthcare professionals for proper medication",
+              sideEffects: [],
+              price: "Varies"
+            }
+          ],
+          warning: "These symptoms require proper medical evaluation for accurate diagnosis and treatment. Do not delay seeking professional medical care.",
+          followUp: "Schedule a consultation with our qualified doctors for comprehensive evaluation and personalized treatment plan.",
           patientInfo: { age, gender, severity, duration }
-        });
+        };
+        
+        console.log('Setting fallback diagnosis:', fallbackDiagnosis);
+        setDiagnosis(fallbackDiagnosis);
       }
       
       setIsAnalyzing(false);
