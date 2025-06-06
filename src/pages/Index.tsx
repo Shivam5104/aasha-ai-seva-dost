@@ -1,17 +1,21 @@
 
 import React from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
 import LocationPermission from "@/components/LocationPermission";
 import SymptomChecker from "@/components/SymptomChecker";
 import AIChatbot from "@/components/AIChatbot";
 import MedicineDelivery from "@/components/MedicineDelivery";
 import DoctorSchedule from "@/components/DoctorSchedule";
 import VoiceCall from "@/components/VoiceCall";
+import { MedicationAlarm } from "@/components/MedicationAlarm";
+import { MedicalHistory } from "@/components/MedicalHistory";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Heart, Pill, Calendar, Phone, MapPin } from "lucide-react";
 
 const Index = () => {
   const { user } = useAuth();
+  const { translations, language } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
@@ -19,11 +23,10 @@ const Index = () => {
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 dark:text-white mb-4">
-            Welcome to{" "}
-            <span className="text-blue-600 dark:text-blue-400">Aasha AI Seva</span>
+            {translations.welcome}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Your AI-powered healthcare companion providing 24/7 medical assistance, 
+            {translations.health_companion} - AI-powered healthcare with 24/7 medical assistance, 
             medicine delivery, and expert consultations in your preferred language.
           </p>
           
@@ -45,7 +48,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold dark:text-white">AI Health Assistant</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Get instant medical advice and symptom analysis powered by advanced AI
+                Get instant medical advice and symptom analysis with specific medicine recommendations
               </p>
             </CardContent>
           </Card>
@@ -54,10 +57,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Pill className="h-8 w-8 text-blue-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Medicine Delivery</h3>
+                <h3 className="text-xl font-semibold dark:text-white">Smart Medicine Management</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Order medicines online with home delivery and prescription scanning
+                Order medicines with prescription scanning, set reminders, and track medication history
               </p>
             </CardContent>
           </Card>
@@ -69,7 +72,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold dark:text-white">Doctor Appointments</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Schedule consultations with certified doctors and specialists
+                Schedule consultations with certified doctors and maintain your medical history
               </p>
             </CardContent>
           </Card>
@@ -81,7 +84,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold dark:text-white">Voice Consultation</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Talk to healthcare experts in your preferred language
+                Talk to healthcare experts in your preferred language with real-time translation
               </p>
             </CardContent>
           </Card>
@@ -93,7 +96,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold dark:text-white">Emergency Services</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Find nearby hospitals and emergency contact assistance
+                Find nearby hospitals and emergency contact assistance with location tracking
               </p>
             </CardContent>
           </Card>
@@ -105,7 +108,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold dark:text-white">Secure & Private</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Your health data is encrypted and securely stored
+                Your health data is encrypted, securely stored, and HIPAA compliant
               </p>
             </CardContent>
           </Card>
@@ -114,16 +117,21 @@ const Index = () => {
         {/* Main Components */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <LocationPermission />
-          <SymptomChecker language="english" />
+          <SymptomChecker language={language} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <MedicineDelivery language="english" />
-          <DoctorSchedule language="english" />
+          <MedicineDelivery language={language} />
+          <DoctorSchedule language={language} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <MedicationAlarm />
+          <MedicalHistory />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <VoiceCall language="english" />
+          <VoiceCall language={language} />
           <AIChatbot />
         </div>
       </div>
