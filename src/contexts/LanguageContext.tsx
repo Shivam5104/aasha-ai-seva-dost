@@ -77,48 +77,49 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const applyFontToDocument = (fontClass: string) => {
     console.log('Applying font class:', fontClass);
     
-    // Remove all existing font classes from html element
-    const htmlElement = document.documentElement;
-    htmlElement.className = htmlElement.className.replace(/font-\w+/g, '');
-    
-    // Remove all existing font classes from body element
-    const bodyElement = document.body;
-    bodyElement.className = bodyElement.className.replace(/font-\w+/g, '');
-    
-    // Add the new font class to both html and body
-    htmlElement.classList.add(fontClass);
-    bodyElement.classList.add(fontClass);
-    
-    // Also apply to all text elements for immediate effect
-    const style = document.createElement('style');
-    style.textContent = `
-      .${fontClass} * {
-        font-family: ${getFontFamily(fontClass)} !important;
-      }
-    `;
-    
-    // Remove any existing dynamic font styles
+    // Remove existing dynamic font styles
     const existingStyle = document.getElementById('dynamic-font-style');
     if (existingStyle) {
       existingStyle.remove();
     }
     
+    // Get font family
+    const fontFamily = getFontFamily(fontClass);
+    
+    // Create comprehensive style injection
+    const style = document.createElement('style');
     style.id = 'dynamic-font-style';
+    style.textContent = `
+      html, body, #root {
+        font-family: ${fontFamily} !important;
+      }
+      *, *::before, *::after {
+        font-family: ${fontFamily} !important;
+      }
+      .${fontClass}, .${fontClass} * {
+        font-family: ${fontFamily} !important;
+      }
+    `;
+    
     document.head.appendChild(style);
+    
+    // Also apply classes to document elements
+    document.documentElement.className = document.documentElement.className.replace(/font-\w+/g, '') + ' ' + fontClass;
+    document.body.className = document.body.className.replace(/font-\w+/g, '') + ' ' + fontClass;
   };
 
   const getFontFamily = (fontClass: string): string => {
     const fontMap: Record<string, string> = {
-      'font-hindi': "'Noto Sans Devanagari', sans-serif",
-      'font-telugu': "'Noto Sans Telugu', sans-serif", 
-      'font-kannada': "'Noto Sans Kannada', sans-serif",
-      'font-odia': "'Noto Sans Oriya', sans-serif",
-      'font-gujarati': "'Noto Sans Gujarati', sans-serif",
-      'font-punjabi': "'Noto Sans Gurmukhi', sans-serif",
-      'font-bengali': "'Noto Sans Bengali', sans-serif",
-      'font-tamil': "'Noto Sans Tamil', sans-serif",
-      'font-malayalam': "'Noto Sans Malayalam', sans-serif",
-      'font-urdu': "'Noto Nastaliq Urdu', sans-serif",
+      'font-hindi': "'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif",
+      'font-telugu': "'Noto Sans Telugu', 'Gautami', sans-serif", 
+      'font-kannada': "'Noto Sans Kannada', 'Tunga', sans-serif",
+      'font-odia': "'Noto Sans Oriya', 'Kalinga', sans-serif",
+      'font-gujarati': "'Noto Sans Gujarati', 'Shruti', sans-serif",
+      'font-punjabi': "'Noto Sans Gurmukhi', 'Raavi', sans-serif",
+      'font-bengali': "'Noto Sans Bengali', 'Vrinda', sans-serif",
+      'font-tamil': "'Noto Sans Tamil', 'Latha', sans-serif",
+      'font-malayalam': "'Noto Sans Malayalam', 'Kartika', sans-serif",
+      'font-urdu': "'Noto Nastaliq Urdu', 'Aleem', sans-serif",
       'font-sans': "system-ui, -apple-system, sans-serif"
     };
     return fontMap[fontClass] || "system-ui, -apple-system, sans-serif";
@@ -129,7 +130,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguage(newLanguage);
     
     const fontClass = languageFonts[newLanguage as keyof typeof languageFonts] || 'font-sans';
-    applyFontToDocument(fontClass);
+    console.log('Applying font class:', fontClass);
+    
+    // Force immediate font application
+    setTimeout(() => {
+      applyFontToDocument(fontClass);
+    }, 100);
   };
 
   useEffect(() => {

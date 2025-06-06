@@ -44,6 +44,7 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
     }
 
     setIsAnalyzing(true);
+    console.log('Analyzing symptoms:', symptoms);
     
     setTimeout(() => {
       const condition = findEnhancedMedicalCondition(symptoms);
@@ -55,7 +56,8 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
                    symptoms.toLowerCase().includes('headache') ? "Tension Headache/Migraine" :
                    symptoms.toLowerCase().includes('cough') ? "Respiratory Tract Infection" :
                    symptoms.toLowerCase().includes('diabetes') ? "Diabetes Management" :
-                   symptoms.toLowerCase().includes('blood pressure') || symptoms.toLowerCase().includes('hypertension') ? "Hypertension Management" : 
+                   symptoms.toLowerCase().includes('blood pressure') || symptoms.toLowerCase().includes('hypertension') ? "Hypertension Management" :
+                   symptoms.toLowerCase().includes('stomach') || symptoms.toLowerCase().includes('gastric') ? "Gastric Issues" :
                    "Health Concern Requiring Medical Attention",
           severity: condition.severity.charAt(0).toUpperCase() + condition.severity.slice(1),
           confidence: "85%",
@@ -67,7 +69,8 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
             duration: med.duration,
             instructions: med.instructions,
             sideEffects: med.sideEffects || [],
-            price: med.price
+            price: med.price,
+            medicineType: med.medicineType
           })) || [],
           warning: condition.warnings?.join('. ') || 'Consult healthcare professional for proper diagnosis',
           followUp: condition.whenToSeeDoctor?.join('. ') || 'Schedule follow-up if symptoms persist',
@@ -82,39 +85,52 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
         console.log('Setting diagnosis with medicines:', mockDiagnosis.medicines);
         setDiagnosis(mockDiagnosis);
       } else {
-        // Enhanced fallback with general health advice and specific medicines
+        // Enhanced fallback with more comprehensive medical advice
         const fallbackDiagnosis = {
           condition: "General Health Concern",
           severity: "Moderate",
           confidence: "70%",
           remedies: [
-            "Rest and maintain adequate hydration",
+            "Rest and maintain adequate hydration (8-10 glasses water daily)",
             "Monitor symptoms and note any changes",
-            "Maintain balanced diet",
-            "Light exercise as tolerated"
+            "Maintain balanced diet with fruits and vegetables",
+            "Light exercise as tolerated",
+            "Avoid smoking and alcohol"
           ],
           medicines: [
             {
-              name: "Paracetamol 500mg",
-              dosage: "1 tablet",
+              name: "Paracetamol 650mg",
+              dosage: "1-2 tablets",
               frequency: "Every 6-8 hours as needed",
               duration: "2-3 days",
-              instructions: "Take with water after meals. Do not exceed 4 tablets per day",
-              sideEffects: ["Nausea", "Skin rash (rare)"],
-              price: "₹25"
+              instructions: "Take with water after meals. Maximum 4 tablets per day",
+              sideEffects: ["Liver damage with overdose", "Nausea (rare)"],
+              price: "₹25-40",
+              medicineType: "painkiller"
+            },
+            {
+              name: "Multivitamin Tablet",
+              dosage: "1 tablet",
+              frequency: "Once daily after breakfast",
+              duration: "30 days",
+              instructions: "Take with meal for better absorption",
+              sideEffects: ["Mild stomach upset if taken empty stomach"],
+              price: "₹150-250",
+              medicineType: "supplement"
             },
             {
               name: "ORS (Oral Rehydration Solution)",
               dosage: "1 sachet in 200ml water",
-              frequency: "2-3 times daily",
+              frequency: "2-3 times daily as needed",
               duration: "Until symptoms improve",
               instructions: "Dissolve completely in clean water. Consume within 24 hours",
               sideEffects: ["None commonly reported"],
-              price: "₹15"
+              price: "₹15-25",
+              medicineType: "supplement"
             }
           ],
-          warning: "These are general recommendations. For accurate diagnosis and specific treatment, consult with a qualified healthcare professional.",
-          followUp: "If symptoms persist for more than 3 days or worsen, seek immediate medical attention.",
+          warning: "These are general recommendations. For accurate diagnosis and specific treatment, consult with a qualified healthcare professional immediately.",
+          followUp: "If symptoms persist for more than 3 days, worsen, or if you develop fever, difficulty breathing, severe pain, or other concerning symptoms, seek immediate medical attention.",
           patientInfo: { age, gender, severity, duration }
         };
         
@@ -296,13 +312,18 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
               <div className="bg-white p-4 rounded-lg">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                   <Pill className="w-4 h-4 text-blue-500" />
-                  Prescribed Medicines & Dosages
+                  Doctor Prescribed Medicines & Dosages
                 </h3>
                 <div className="space-y-4">
                   {diagnosis.medicines.map((med: any, index: number) => (
                     <div key={index} className="border border-blue-200 p-4 rounded-lg bg-blue-50">
                       <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-medium text-blue-800 text-lg">{med.name}</h4>
+                        <div>
+                          <h4 className="font-medium text-blue-800 text-lg">{med.name}</h4>
+                          <Badge variant="secondary" className="mt-1">
+                            {med.medicineType?.charAt(0).toUpperCase() + med.medicineType?.slice(1) || 'Medicine'}
+                          </Badge>
+                        </div>
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -326,9 +347,10 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
                         <div>
                           <strong className="text-blue-700">Duration:</strong> {med.duration}
                         </div>
-                        <div>
-                          <strong className="text-blue-700">Instructions:</strong> {med.instructions}
-                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <strong className="text-blue-700">Instructions:</strong> {med.instructions}
                       </div>
                       
                       {med.sideEffects && med.sideEffects.length > 0 && (
