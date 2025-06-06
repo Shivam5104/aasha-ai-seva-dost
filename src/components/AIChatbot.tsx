@@ -1,10 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, Camera, Upload, User, LogIn, Phone, Mail, MapPin, Truck, Clock, Navigation } from 'lucide-react';
+import { generateMedicalResponse } from '@/utils/medicalKnowledge';
 import LocationPermission from './LocationPermission';
 
 interface Message {
@@ -91,105 +91,6 @@ const AIChatbot: React.FC = () => {
     setMessages(prev => [...prev, botMessage]);
   };
 
-  const generateMedicalResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    if (message.includes('fever') || message.includes('temperature')) {
-      return `For fever management:
-      
-🌡️ **Immediate Care:**
-- Take paracetamol 500mg (1 tablet every 6 hours)
-- Drink plenty of fluids
-- Rest in a cool environment
-- Use cold compress on forehead
-
-⚠️ **See a doctor if:**
-- Fever above 103°F (39.4°C)
-- Persistent for more than 3 days
-- Severe headache or difficulty breathing
-
-💊 **Medicine Available:** Paracetamol, Crocin available for same-day delivery.`;
-    }
-    
-    if (message.includes('headache') || message.includes('head pain')) {
-      return `For headache relief:
-      
-💊 **Treatment:**
-- Take paracetamol 500mg or ibuprofen 400mg
-- Apply cold/hot compress
-- Stay hydrated
-- Rest in dark, quiet room
-
-🚨 **Emergency signs:**
-- Sudden severe headache
-- Fever with stiff neck
-- Vision changes
-- Confusion
-
-Would you like me to arrange medicine delivery?`;
-    }
-    
-    if (message.includes('cough') || message.includes('cold')) {
-      return `For cough and cold:
-      
-🍯 **Home remedies:**
-- Honey and warm water
-- Steam inhalation
-- Ginger tea
-- Throat gargling with salt water
-
-💊 **Medicines:**
-- Cough syrup: Benadryl, Ascoril
-- For congestion: Cetrizine
-
-💡 **Prevention:**
-- Wear mask in public
-- Wash hands frequently
-- Avoid cold drinks`;
-    }
-    
-    if (message.includes('order') || message.includes('delivery') || message.includes('medicine')) {
-      if (user?.orderHistory?.length) {
-        return 'Let me check your current orders...';
-      } else {
-        return `I can help you order medicines! 
-        
-📦 **Available services:**
-- Same-day delivery (2-4 hours)
-- Prescription medicines
-- OTC medicines
-- Health supplements
-
-To place an order, please tell me:
-1. Medicine name
-2. Quantity needed
-3. Your address
-
-💊 **Popular medicines in stock:**
-- Paracetamol, Crocin (Fever)
-- Cetrizine (Allergy)
-- Omeprazole (Acidity)
-- Vitamin D3 supplements`;
-      }
-    }
-    
-    return `I understand your concern. As your AI health assistant, I can provide general guidance, but for proper diagnosis, I recommend consulting with our doctors.
-
-🩺 **I can help you with:**
-- General health questions
-- Medicine information
-- Delivery tracking
-- Emergency contacts
-- Finding nearby hospitals
-
-📞 **Need immediate help?**
-- Emergency: Call 108
-- Medicine delivery: +91 98765-43210
-- Email support: support@aashaaiseva.com
-
-Would you like to speak with a doctor or order medicines?`;
-  };
-
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
@@ -214,6 +115,7 @@ Would you like to speak with a doctor or order medicines?`;
           addBotMessage('You don\'t have any active orders. Would you like to place an order for medicines?');
         }
       } else {
+        // Use the new medical knowledge base
         const response = generateMedicalResponse(inputMessage);
         addBotMessage(response);
       }
@@ -236,24 +138,31 @@ Would you like to speak with a doctor or order medicines?`;
 
       setTimeout(() => {
         setIsTyping(false);
-        addBotMessage(`I've analyzed your prescription for "${file.name}". Here are my recommendations:
+        addBotMessage(`I've analyzed your prescription "${file.name}". Here are my recommendations:
 
 📋 **Prescription Analysis:**
-- Medicine 1: Paracetamol 500mg - Take 1 tablet every 6 hours
-- Medicine 2: Amoxicillin 250mg - Take 1 capsule twice daily for 7 days
-- Medicine 3: Vitamin D3 - Take 1 tablet weekly
+- Medicine 1: Paracetamol 500mg - Take 1 tablet every 6 hours for fever
+- Medicine 2: Amoxicillin 250mg - Take 1 capsule twice daily for 7 days for infection
+- Medicine 3: Vitamin D3 - Take 1 tablet weekly for vitamin deficiency
 
-💊 **Availability:**
-- All medicines are in stock
+💊 **Availability & Pricing:**
+- Paracetamol 500mg (10 tablets) - ₹25 ✅ In Stock
+- Amoxicillin 250mg (10 capsules) - ₹120 ✅ In Stock  
+- Vitamin D3 (4 tablets) - ₹80 ✅ In Stock
+
+📦 **Delivery Details:**
 - Estimated delivery: 2-3 hours
-- Total cost: ₹245
+- Total medicine cost: ₹225
+- Delivery charges: ₹20
+- **Total: ₹245**
 
-⚠️ **Important notes:**
-- Take Amoxicillin with food
-- Complete the full antibiotic course
+⚠️ **Important Instructions:**
+- Take Amoxicillin with food to avoid stomach upset
+- Complete the full antibiotic course even if you feel better
 - Avoid alcohol during treatment
+- Take Paracetamol only when fever is above 100°F
 
-Would you like me to place this order for delivery?`, 'prescription');
+Would you like me to place this order for home delivery?`, 'prescription');
       }, 2000);
     }
   };

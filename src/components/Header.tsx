@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { User, Bell, Menu } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { LoginDialog } from './auth/LoginDialog';
 import { UserProfile } from './auth/UserProfile';
 import LanguageSelector from './LanguageSelector';
@@ -15,6 +16,7 @@ import {
 
 export function Header() {
   const { user } = useAuth();
+  const { language, setLanguage, translations } = useLanguage();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
 
@@ -28,15 +30,17 @@ export function Header() {
               <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 Aasha AI Seva
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Your Health Companion</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {translations.health_companion}
+              </p>
             </div>
           </div>
 
           {/* Right side buttons */}
           <div className="flex items-center space-x-4">
             <LanguageSelector 
-              selectedLanguage="english" 
-              onLanguageChange={(lang) => console.log('Language changed:', lang)} 
+              selectedLanguage={language} 
+              onLanguageChange={setLanguage} 
             />
             
             <ThemeToggle />
@@ -60,7 +64,7 @@ export function Header() {
               </div>
             ) : (
               <Button onClick={() => setShowLoginDialog(true)}>
-                Sign In
+                {translations.sign_in}
               </Button>
             )}
             

@@ -1,12 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Pill, MapPin, Clock, Phone, Truck, Camera, User } from 'lucide-react';
+import { Pill, MapPin, Clock, Phone, Truck, Camera, User, Upload, CheckCircle } from 'lucide-react';
 
 interface MedicineDeliveryProps {
   language: string;
@@ -19,8 +18,12 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [medicines, setMedicines] = useState('');
   const [urgency, setUrgency] = useState('standard');
-  const [prescriptionImage, setPrescriptionImage] = useState(null);
+  const [prescriptionImage, setPrescriptionImage] = useState<File | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const deliveryOptions = [
     { id: 'express', label: '1-2 Hours', price: '₹50', icon: '🚀' },
@@ -37,6 +40,79 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
 
   const handleOrderSubmit = () => {
     setOrderPlaced(true);
+  };
+
+  const handleCaptureClick = () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      setIsCapturing(true);
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      })
+      .catch((error) => {
+        console.error('Error accessing camera:', error);
+        setIsCapturing(false);
+        // Fallback to file input
+        fileInputRef.current?.click();
+      });
+    } else {
+      // Fallback to file input for browsers without camera support
+      fileInputRef.current?.click();
+    }
+  };
+
+  const takePicture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0);
+        
+        // Convert canvas to blob and create file
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `prescription_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            setPrescriptionImage(file);
+            setIsCapturing(false);
+            
+            // Stop camera stream
+            const stream = video.srcObject as MediaStream;
+            if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+            }
+          }
+        }, 'image/jpeg', 0.8);
+      }
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPrescriptionImage(file);
+    }
+  };
+
+  const cancelCapture = () => {
+    setIsCapturing(false);
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
   };
 
   if (orderPlaced) {
@@ -101,6 +177,41 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
           >
             Place Another Order
           </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isCapturing) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="w-5 h-5 text-green-600" />
+            Capture Prescription
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="relative">
+            <video 
+              ref={videoRef} 
+              className="w-full rounded-lg"
+              style={{ maxHeight: '400px' }}
+            />
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={takePicture} className="flex-1">
+              <Camera className="w-4 h-4 mr-2" />
+              Take Picture
+            </Button>
+            <Button variant="outline" onClick={cancelCapture} className="flex-1">
+              Cancel
+            </Button>
+          </div>
+          <p className="text-sm text-gray-600 text-center">
+            Position your prescription clearly in the camera view and click "Take Picture"
+          </p>
         </CardContent>
       </Card>
     );
@@ -180,14 +291,53 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
           {orderType === 'prescription' ? (
             <div>
               <Label>Upload Prescription</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Take a clear photo of your prescription</p>
-                <Button variant="outline">
-                  <Camera className="w-4 h-4 mr-2" />
-                  Capture Prescription
-                </Button>
-              </div>
+              {prescriptionImage ? (
+                <div className="border-2 border-green-300 rounded-lg p-4 bg-green-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="text-green-800 font-medium">
+                        Prescription captured: {prescriptionImage.name}
+                      </span>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setPrescriptionImage(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                  <p className="text-sm text-green-600 mt-2">
+                    ✅ Your prescription has been uploaded successfully
+                  </p>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-4">Take a clear photo of your prescription</p>
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={handleCaptureClick}>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture Prescription
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload File
+                    </Button>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    accept="image/*,.pdf"
+                    className="hidden"
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div>
