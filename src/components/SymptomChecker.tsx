@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Thermometer, Heart, Brain, Pill, Clock, Bell } from 'lucide-react';
-import { findEnhancedMedicalCondition, generateEnhancedMedicalResponse } from '@/utils/enhancedMedicalKnowledge';
+import { findEnhancedMedicalCondition } from '@/utils/enhancedMedicalKnowledge';
 import { toast } from 'sonner';
 
 interface SymptomCheckerProps {
@@ -47,9 +47,9 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
     
     setTimeout(() => {
       const condition = findEnhancedMedicalCondition(symptoms);
+      console.log('Found condition:', condition);
       
       if (condition) {
-        // Create a proper diagnosis object with all required fields
         const mockDiagnosis = {
           condition: symptoms.toLowerCase().includes('fever') ? "Fever and Associated Symptoms" :
                    symptoms.toLowerCase().includes('headache') ? "Tension Headache/Migraine" :
@@ -59,7 +59,7 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
                    "Health Concern Requiring Medical Attention",
           severity: condition.severity.charAt(0).toUpperCase() + condition.severity.slice(1),
           confidence: "85%",
-          remedies: condition.homeRemedies || ['Consult with healthcare professional', 'Rest and hydration', 'Monitor symptoms'],
+          remedies: condition.homeRemedies || [],
           medicines: condition.medicines?.map(med => ({
             name: med.name,
             dosage: med.dosage,
@@ -79,33 +79,42 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ language }) => {
           }
         };
         
-        console.log('Setting diagnosis:', mockDiagnosis);
+        console.log('Setting diagnosis with medicines:', mockDiagnosis.medicines);
         setDiagnosis(mockDiagnosis);
       } else {
-        // Enhanced fallback with general health advice
+        // Enhanced fallback with general health advice and specific medicines
         const fallbackDiagnosis = {
-          condition: "Symptoms require professional medical evaluation",
-          severity: "Unknown",
-          confidence: "N/A",
+          condition: "General Health Concern",
+          severity: "Moderate",
+          confidence: "70%",
           remedies: [
-            "Consult with a healthcare professional for accurate diagnosis",
-            "Monitor symptoms and note any changes",
             "Rest and maintain adequate hydration",
-            "Avoid self-medication without professional guidance"
+            "Monitor symptoms and note any changes",
+            "Maintain balanced diet",
+            "Light exercise as tolerated"
           ],
           medicines: [
             {
-              name: "General Health Support",
-              dosage: "As recommended by doctor",
-              frequency: "As prescribed",
-              duration: "As needed",
-              instructions: "Please consult with our healthcare professionals for proper medication",
-              sideEffects: [],
-              price: "Varies"
+              name: "Paracetamol 500mg",
+              dosage: "1 tablet",
+              frequency: "Every 6-8 hours as needed",
+              duration: "2-3 days",
+              instructions: "Take with water after meals. Do not exceed 4 tablets per day",
+              sideEffects: ["Nausea", "Skin rash (rare)"],
+              price: "₹25"
+            },
+            {
+              name: "ORS (Oral Rehydration Solution)",
+              dosage: "1 sachet in 200ml water",
+              frequency: "2-3 times daily",
+              duration: "Until symptoms improve",
+              instructions: "Dissolve completely in clean water. Consume within 24 hours",
+              sideEffects: ["None commonly reported"],
+              price: "₹15"
             }
           ],
-          warning: "These symptoms require proper medical evaluation for accurate diagnosis and treatment. Do not delay seeking professional medical care.",
-          followUp: "Schedule a consultation with our qualified doctors for comprehensive evaluation and personalized treatment plan.",
+          warning: "These are general recommendations. For accurate diagnosis and specific treatment, consult with a qualified healthcare professional.",
+          followUp: "If symptoms persist for more than 3 days or worsen, seek immediate medical attention.",
           patientInfo: { age, gender, severity, duration }
         };
         

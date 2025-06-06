@@ -28,18 +28,6 @@ const languageFonts = {
   urdu: 'font-urdu'
 };
 
-// Add Google Fonts link dynamically
-const addGoogleFonts = () => {
-  const existingLink = document.getElementById('google-fonts');
-  if (!existingLink) {
-    const link = document.createElement('link');
-    link.id = 'google-fonts';
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Oriya:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+Gurmukhi:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap';
-    document.head.appendChild(link);
-  }
-};
-
 const translations = {
   english: {
     welcome: 'Welcome to Aasha AI Seva',
@@ -64,50 +52,89 @@ const translations = {
     symptom_checker: 'AI लक्षण तपासणी',
     medicine_delivery: 'औषध वितरण',
     doctor_appointment: 'डॉक्टरांची भेट'
+  },
+  telugu: {
+    welcome: 'ఆశా AI సేవకు స్వాగతం',
+    health_companion: 'మీ ఆరోగ్య సహచరుడు',
+    sign_in: 'సైన్ ఇన్',
+    symptom_checker: 'AI లక్షణ తనిఖీ',
+    medicine_delivery: 'ఔషధ పంపిణీ',
+    doctor_appointment: 'వైద్య నియామకం'
+  },
+  kannada: {
+    welcome: 'ಆಶಾ AI ಸೇವೆಗೆ ಸ್ವಾಗತ',
+    health_companion: 'ನಿಮ್ಮ ಆರೋಗ್ಯ ಸಹಚರ',
+    sign_in: 'ಸೈನ್ ಇನ್',
+    symptom_checker: 'AI ಲಕ್ಷಣ ಪರೀಕ್ಷಕ',
+    medicine_delivery: 'ಔಷಧ ವಿತರಣೆ',
+    doctor_appointment: 'ವೈದ್ಯ ನೇಮಕಾತಿ'
   }
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState('english');
 
-  const applyFont = (lang: string) => {
-    const fontClass = languageFonts[lang as keyof typeof languageFonts] || 'font-sans';
+  const applyFontToDocument = (fontClass: string) => {
+    console.log('Applying font class:', fontClass);
     
-    // Add Google Fonts
-    addGoogleFonts();
+    // Remove all existing font classes from html element
+    const htmlElement = document.documentElement;
+    htmlElement.className = htmlElement.className.replace(/font-\w+/g, '');
     
-    // Remove all existing font classes
-    document.documentElement.classList.remove(
-      'font-sans', 'font-serif', 'font-mono', 
-      'font-hindi', 'font-telugu', 'font-kannada', 'font-odia',
-      'font-gujarati', 'font-punjabi', 'font-bengali', 'font-tamil',
-      'font-malayalam', 'font-urdu'
-    );
+    // Remove all existing font classes from body element
+    const bodyElement = document.body;
+    bodyElement.className = bodyElement.className.replace(/font-\w+/g, '');
     
-    // Add the new font class
-    document.documentElement.classList.add(fontClass);
+    // Add the new font class to both html and body
+    htmlElement.classList.add(fontClass);
+    bodyElement.classList.add(fontClass);
     
-    // Also apply to body for better coverage
-    document.body.classList.remove(
-      'font-sans', 'font-serif', 'font-mono',
-      'font-hindi', 'font-telugu', 'font-kannada', 'font-odia',
-      'font-gujarati', 'font-punjabi', 'font-bengali', 'font-tamil',
-      'font-malayalam', 'font-urdu'
-    );
-    document.body.classList.add(fontClass);
+    // Also apply to all text elements for immediate effect
+    const style = document.createElement('style');
+    style.textContent = `
+      .${fontClass} * {
+        font-family: ${getFontFamily(fontClass)} !important;
+      }
+    `;
     
-    console.log('Font applied:', fontClass, 'for language:', lang);
+    // Remove any existing dynamic font styles
+    const existingStyle = document.getElementById('dynamic-font-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    style.id = 'dynamic-font-style';
+    document.head.appendChild(style);
+  };
+
+  const getFontFamily = (fontClass: string): string => {
+    const fontMap: Record<string, string> = {
+      'font-hindi': "'Noto Sans Devanagari', sans-serif",
+      'font-telugu': "'Noto Sans Telugu', sans-serif", 
+      'font-kannada': "'Noto Sans Kannada', sans-serif",
+      'font-odia': "'Noto Sans Oriya', sans-serif",
+      'font-gujarati': "'Noto Sans Gujarati', sans-serif",
+      'font-punjabi': "'Noto Sans Gurmukhi', sans-serif",
+      'font-bengali': "'Noto Sans Bengali', sans-serif",
+      'font-tamil': "'Noto Sans Tamil', sans-serif",
+      'font-malayalam': "'Noto Sans Malayalam', sans-serif",
+      'font-urdu': "'Noto Nastaliq Urdu', sans-serif",
+      'font-sans': "system-ui, -apple-system, sans-serif"
+    };
+    return fontMap[fontClass] || "system-ui, -apple-system, sans-serif";
   };
 
   const handleLanguageChange = (newLanguage: string) => {
+    console.log('Language changing to:', newLanguage);
     setLanguage(newLanguage);
-    applyFont(newLanguage);
-    console.log('Language changed to:', newLanguage);
+    
+    const fontClass = languageFonts[newLanguage as keyof typeof languageFonts] || 'font-sans';
+    applyFontToDocument(fontClass);
   };
 
   useEffect(() => {
-    // Apply initial font
-    applyFont(language);
+    const fontClass = languageFonts[language as keyof typeof languageFonts] || 'font-sans';
+    applyFontToDocument(fontClass);
   }, [language]);
 
   const contextValue: LanguageContextType = {
