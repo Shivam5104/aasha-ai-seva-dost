@@ -5,10 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Phone, Navigation, Hospital, Clock, AlertTriangle } from 'lucide-react';
 import { locationService, Hospital as HospitalType } from '@/services/locationService';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 const LocationPermission: React.FC = () => {
-  const { translations } = useLanguage();
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(locationService.getUserLocation());
@@ -44,14 +42,14 @@ const LocationPermission: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-800">
             <MapPin className="w-5 h-5" />
-            {translations.location_services}
+            Location Services
           </CardTitle>
         </CardHeader>
         <CardContent>
           {!hasPermission ? (
             <div className="text-center space-y-4">
               <p className="text-gray-600">
-                {translations.enable_location}
+                Enable location to find nearby hospitals and emergency services
               </p>
               <Button 
                 onClick={requestLocation} 
@@ -59,13 +57,13 @@ const LocationPermission: React.FC = () => {
                 className="w-full"
               >
                 <Navigation className="w-4 h-4 mr-2" />
-                {isLoading ? translations.getting_location : translations.enable_location_btn}
+                {isLoading ? 'Getting Location...' : 'Enable Location'}
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Badge className="bg-green-100 text-green-800">{translations.location_enabled}</Badge>
+                <Badge className="bg-green-100 text-green-800">Location Enabled</Badge>
               </div>
               {userLocation?.address && (
                 <p className="text-sm text-gray-600">
@@ -79,7 +77,7 @@ const LocationPermission: React.FC = () => {
                   onClick={() => setShowHospitals(!showHospitals)}
                 >
                   <Hospital className="w-4 h-4 mr-1" />
-                  {showHospitals ? translations.hide_hospitals : translations.find_hospitals}
+                  {showHospitals ? 'Hide' : 'Find'} Hospitals
                 </Button>
               </div>
             </div>
@@ -94,9 +92,9 @@ const LocationPermission: React.FC = () => {
             <div>
               <h4 className="font-medium text-red-800 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
-                {translations.emergency_services}
+                Emergency Services
               </h4>
-              <p className="text-sm text-red-600">{translations.emergency_services_24}</p>
+              <p className="text-sm text-red-600">24/7 Emergency Medical Assistance</p>
             </div>
             <Button 
               variant="destructive" 
@@ -104,7 +102,7 @@ const LocationPermission: React.FC = () => {
               size="lg"
             >
               <Phone className="w-4 h-4 mr-2" />
-              {translations.call_108}
+              Call 108
             </Button>
           </div>
         </CardContent>
@@ -116,7 +114,7 @@ const LocationPermission: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Hospital className="w-5 h-5 text-green-600" />
-              {translations.nearby_hospitals}
+              Nearby Hospitals
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -135,11 +133,11 @@ const LocationPermission: React.FC = () => {
                       <div className="flex items-center gap-4 mt-2">
                         <span className="text-sm text-blue-600 flex items-center gap-1">
                           <Navigation className="w-3 h-3" />
-                          {hospital.distance} {translations.km_away}
+                          {hospital.distance} km away
                         </span>
                         <span className="text-sm text-green-600 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          ~{Math.ceil(hospital.distance * 3)} {translations.mins}
+                          ~{Math.ceil(hospital.distance * 3)} mins
                         </span>
                       </div>
                     </div>
@@ -149,7 +147,7 @@ const LocationPermission: React.FC = () => {
                       onClick={() => window.open(`tel:${hospital.phone}`, '_self')}
                     >
                       <Phone className="w-3 h-3 mr-1" />
-                      {translations.call}
+                      Call
                     </Button>
                   </div>
                 </div>
