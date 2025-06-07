@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -351,18 +352,34 @@ Would you like me to place this order for home delivery?`, 'prescription');
             </Button>
           </div>
 
-          {/* Customer Support */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Customer Support</h4>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <Phone className="w-3 h-3 text-green-600" />
-                <span>+91 1800-123-4567</span>
+          {/* Customer Support - Fixed Layout */}
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Phone className="w-4 h-4 text-blue-600" />
+              <h4 className="font-semibold text-blue-800 text-sm">24/7 Customer Support</h4>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-600">Call us:</span>
+                  <a href="tel:+911800123567" className="text-sm font-medium text-green-700 hover:text-green-800">
+                    +91 1800-123-4567
+                  </a>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Mail className="w-3 h-3 text-blue-600" />
-                <span>support@aashaaiseva.com</span>
+              <div className="flex items-center gap-3">
+                <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-600">Email us:</span>
+                  <a href="mailto:support@aashaaiseva.com" className="text-sm font-medium text-blue-700 hover:text-blue-800">
+                    support@aashaaiseva.com
+                  </a>
+                </div>
               </div>
+            </div>
+            <div className="mt-3 pt-2 border-t border-blue-200">
+              <p className="text-xs text-gray-600">Available in Hindi, English, and 15+ regional languages</p>
             </div>
           </div>
         </CardContent>
