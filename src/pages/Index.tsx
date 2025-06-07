@@ -26,14 +26,13 @@ const Index = () => {
             {translations.welcome}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            {translations.health_companion} - AI-powered healthcare with 24/7 medical assistance, 
-            medicine delivery, and expert consultations in your preferred language.
+            {translations.health_companion} - {translations.ai_powered_healthcare}
           </p>
           
           {user && (
             <div className="mt-4 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg inline-block">
               <p className="text-green-600 dark:text-green-400 font-medium">
-                Welcome back! Your personalized healthcare dashboard is ready.
+                {translations.welcome_back}
               </p>
             </div>
           )}
@@ -45,10 +44,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Heart className="h-8 w-8 text-red-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">AI Health Assistant</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.ai_health_assistant}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Get instant medical advice and symptom analysis with specific medicine recommendations
+                {translations.instant_medical_advice}
               </p>
             </CardContent>
           </Card>
@@ -57,10 +56,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Pill className="h-8 w-8 text-blue-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Smart Medicine Management</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.smart_medicine_management}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Order medicines with prescription scanning, set reminders, and track medication history
+                {translations.order_medicines}
               </p>
             </CardContent>
           </Card>
@@ -69,10 +68,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Calendar className="h-8 w-8 text-green-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Doctor Appointments</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.doctor_appointments}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Schedule consultations with certified doctors and maintain your medical history
+                {translations.schedule_consultations}
               </p>
             </CardContent>
           </Card>
@@ -81,10 +80,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Phone className="h-8 w-8 text-purple-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Voice Consultation</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.voice_consultation}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Talk to healthcare experts in your preferred language with real-time translation
+                {translations.talk_to_experts}
               </p>
             </CardContent>
           </Card>
@@ -93,10 +92,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <MapPin className="h-8 w-8 text-orange-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Emergency Services</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.emergency_services}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Find nearby hospitals and emergency contact assistance with location tracking
+                {translations.find_nearby_hospitals}
               </p>
             </CardContent>
           </Card>
@@ -105,10 +104,10 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <Shield className="h-8 w-8 text-indigo-500 mr-3" />
-                <h3 className="text-xl font-semibold dark:text-white">Secure & Private</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{translations.secure_private}</h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Your health data is encrypted, securely stored, and HIPAA compliant
+                {translations.health_data_encrypted}
               </p>
             </CardContent>
           </Card>
