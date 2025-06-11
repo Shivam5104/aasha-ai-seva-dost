@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,10 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Pill, MapPin, Clock, Phone, Truck, Camera, User, Upload, CheckCircle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Pill, MapPin, Clock, Phone, Truck, Camera, User, Upload, CheckCircle, CreditCard, Smartphone, Banknote, Calculator } from 'lucide-react';
 
 interface MedicineDeliveryProps {
   language: string;
+}
+
+interface Medicine {
+  name: string;
+  price: number;
+  quantity: number;
+  available: boolean;
 }
 
 const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
@@ -21,14 +30,28 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
   const [prescriptionImage, setPrescriptionImage] = useState<File | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardName, setCardName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Mock medicines from prescription analysis
+  const prescriptionMedicines: Medicine[] = [
+    { name: 'Paracetamol 500mg (10 tablets)', price: 25, quantity: 1, available: true },
+    { name: 'Amoxicillin 250mg (10 capsules)', price: 120, quantity: 1, available: true },
+    { name: 'Vitamin D3 (4 tablets)', price: 80, quantity: 1, available: true }
+  ];
+
   const deliveryOptions = [
-    { id: 'express', label: '1-2 Hours', price: '₹50', icon: '🚀' },
-    { id: 'standard', label: '3-6 Hours', price: '₹20', icon: '🚚' },
-    { id: 'scheduled', label: 'Schedule Later', price: '₹10', icon: '📅' }
+    { id: 'express', label: '1-2 Hours', price: 50, icon: '🚀' },
+    { id: 'standard', label: '3-6 Hours', price: 20, icon: '🚚' },
+    { id: 'scheduled', label: 'Schedule Later', price: 10, icon: '📅' }
   ];
 
   const nearbyPharmacies = [
@@ -38,8 +61,31 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
     { name: 'Wellness Pharmacy', distance: '2.1 km', rating: '4.4', available: true }
   ];
 
+  const paymentMethods = [
+    { id: 'upi', label: 'UPI Payment', icon: <Smartphone className="w-5 h-5" />, description: 'Pay using UPI ID' },
+    { id: 'card', label: 'Credit/Debit Card', icon: <CreditCard className="w-5 h-5" />, description: 'Visa, Mastercard, RuPay' },
+    { id: 'cod', label: 'Cash on Delivery', icon: <Banknote className="w-5 h-5" />, description: 'Pay when delivered' }
+  ];
+
+  // Calculate pricing
+  const medicineTotal = prescriptionMedicines.reduce((sum, med) => sum + (med.price * med.quantity), 0);
+  const deliveryCharges = deliveryOptions.find(opt => opt.id === urgency)?.price || 20;
+  const subtotal = medicineTotal + deliveryCharges;
+  const isFirstTimeCustomer = true; // Mock - can be determined from user profile
+  const discount = isFirstTimeCustomer ? Math.round(subtotal * 0.15) : 0; // 15% first-time discount
+  const afterDiscount = subtotal - discount;
+  const gst = Math.round(afterDiscount * 0.18); // 18% GST
+  const totalAmount = afterDiscount + gst;
+
   const handleOrderSubmit = () => {
+    if (prescriptionImage || medicines) {
+      setShowPayment(true);
+    }
+  };
+
+  const handlePaymentSubmit = () => {
     setOrderPlaced(true);
+    setShowPayment(false);
   };
 
   const handleCaptureClick = () => {
@@ -61,11 +107,9 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
       .catch((error) => {
         console.error('Error accessing camera:', error);
         setIsCapturing(false);
-        // Fallback to file input
         fileInputRef.current?.click();
       });
     } else {
-      // Fallback to file input for browsers without camera support
       fileInputRef.current?.click();
     }
   };
@@ -82,14 +126,12 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
       if (ctx) {
         ctx.drawImage(video, 0, 0);
         
-        // Convert canvas to blob and create file
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], `prescription_${Date.now()}.jpg`, { type: 'image/jpeg' });
             setPrescriptionImage(file);
             setIsCapturing(false);
             
-            // Stop camera stream
             const stream = video.srcObject as MediaStream;
             if (stream) {
               stream.getTracks().forEach(track => track.stop());
@@ -129,6 +171,8 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
             <h3 className="font-semibold mb-2">Order Details</h3>
             <div className="space-y-2 text-sm">
               <div><strong>Order ID:</strong> MD-{Math.random().toString(36).substr(2, 8).toUpperCase()}</div>
+              <div><strong>Total Paid:</strong> ₹{totalAmount}</div>
+              <div><strong>Payment Method:</strong> {paymentMethods.find(p => p.id === paymentMethod)?.label}</div>
               <div><strong>Estimated Delivery:</strong> 45-90 minutes</div>
               <div><strong>Delivery Partner:</strong> Raj Kumar (+91 98765-43210)</div>
               <div><strong>Pharmacy:</strong> Apollo Pharmacy (0.8 km away)</div>
@@ -173,7 +217,13 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
           <Button 
             variant="outline" 
             className="w-full"
-            onClick={() => setOrderPlaced(false)}
+            onClick={() => {
+              setOrderPlaced(false);
+              setShowPayment(false);
+              setPrescriptionImage(null);
+              setMedicines('');
+              setPaymentMethod('');
+            }}
           >
             Place Another Order
           </Button>
@@ -214,6 +264,189 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
           </p>
         </CardContent>
       </Card>
+    );
+  }
+
+  if (showPayment) {
+    return (
+      <div className="space-y-6">
+        {/* Order Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-green-600" />
+              Order Summary & Payment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Medicine List */}
+            <div>
+              <h3 className="font-semibold mb-3">Medicines</h3>
+              <div className="space-y-2">
+                {prescriptionMedicines.map((medicine, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <span className="font-medium">{medicine.name}</span>
+                      <p className="text-sm text-gray-600">Qty: {medicine.quantity}</p>
+                    </div>
+                    <span className="font-semibold">₹{medicine.price * medicine.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bill Breakdown */}
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3">Bill Details</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Medicine Total</span>
+                  <span>₹{medicineTotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery Charges ({deliveryOptions.find(opt => opt.id === urgency)?.label})</span>
+                  <span>₹{deliveryCharges}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal}</span>
+                </div>
+                {isFirstTimeCustomer && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      First Time Customer Discount (15%)
+                      <Badge variant="secondary" className="text-xs">NEW</Badge>
+                    </span>
+                    <span>-₹{discount}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>After Discount</span>
+                  <span>₹{afterDiscount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GST (18%)</span>
+                  <span>₹{gst}</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                  <span>Total Amount</span>
+                  <span>₹{totalAmount}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Methods */}
+            <div>
+              <h3 className="font-semibold mb-3">Select Payment Method</h3>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value={method.id} id={method.id} />
+                      <div className="flex items-center gap-3 flex-1">
+                        {method.icon}
+                        <div>
+                          <Label htmlFor={method.id} className="font-medium cursor-pointer">
+                            {method.label}
+                          </Label>
+                          <p className="text-sm text-gray-600">{method.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Payment Details Forms */}
+            {paymentMethod === 'upi' && (
+              <div className="space-y-3">
+                <Label htmlFor="upiId">UPI ID</Label>
+                <Input
+                  id="upiId"
+                  placeholder="yourname@paytm / yourname@phonepe"
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
+                />
+              </div>
+            )}
+
+            {paymentMethod === 'card' && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="cardName">Cardholder Name</Label>
+                  <Input
+                    id="cardName"
+                    placeholder="Name on card"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    maxLength={19}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="cardExpiry">Expiry Date</Label>
+                    <Input
+                      id="cardExpiry"
+                      placeholder="MM/YY"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      maxLength={5}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cardCvv">CVV</Label>
+                    <Input
+                      id="cardCvv"
+                      placeholder="123"
+                      value={cardCvv}
+                      onChange={(e) => setCardCvv(e.target.value)}
+                      maxLength={3}
+                      type="password"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {paymentMethod === 'cod' && (
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-sm text-yellow-800">
+                  <strong>Cash on Delivery:</strong> You can pay ₹{totalAmount} in cash when your order is delivered. 
+                  Please keep exact change ready.
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPayment(false)}
+                className="flex-1"
+              >
+                Back to Order
+              </Button>
+              <Button 
+                onClick={handlePaymentSubmit}
+                disabled={!paymentMethod || (paymentMethod === 'upi' && !upiId) || (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv || !cardName))}
+                className="flex-1"
+                size="lg"
+              >
+                {paymentMethod === 'cod' ? 'Confirm Order' : `Pay ₹${totalAmount}`}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -367,7 +600,7 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl mb-2">{option.icon}</div>
                     <h4 className="font-medium">{option.label}</h4>
-                    <p className="text-sm text-gray-600">{option.price}</p>
+                    <p className="text-sm text-gray-600">₹{option.price}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -412,12 +645,12 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
           {/* Submit Button */}
           <Button 
             onClick={handleOrderSubmit}
-            disabled={!patientName || !address || !phoneNumber}
+            disabled={!patientName || !address || !phoneNumber || (!prescriptionImage && !medicines)}
             className="w-full"
             size="lg"
           >
             <Truck className="w-4 h-4 mr-2" />
-            Place Order - ₹{urgency === 'express' ? '50' : urgency === 'standard' ? '20' : '10'}
+            Proceed to Payment
           </Button>
         </CardContent>
       </Card>
