@@ -9,50 +9,53 @@ import { MedicalHistory } from '@/components/MedicalHistory';
 import VoiceCall from '@/components/VoiceCall';
 import AIChatbot from '@/components/AIChatbot';
 import { Heart, Pill, Calendar, Clock, FileText, Phone, Bot } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HealthcareTabsProps {
   language: string;
 }
 
 const HealthcareTabs: React.FC<HealthcareTabsProps> = ({ language }) => {
+  const { translations } = useLanguage();
+
   return (
     <div className="w-full">
       <Tabs defaultValue="symptom-checker" className="w-full">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 h-auto p-1">
           <TabsTrigger value="symptom-checker" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Heart className="w-4 h-4" />
-            <span className="hidden sm:inline">Symptom Checker</span>
-            <span className="sm:hidden">Symptoms</span>
+            <span className="hidden sm:inline">{translations.symptom_checker}</span>
+            <span className="sm:hidden">{translations.symptoms}</span>
           </TabsTrigger>
           <TabsTrigger value="medicine-delivery" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Pill className="w-4 h-4" />
-            <span className="hidden sm:inline">Medicine Delivery</span>
-            <span className="sm:hidden">Medicine</span>
+            <span className="hidden sm:inline">{translations.medicine_delivery}</span>
+            <span className="sm:hidden">{translations.medicine}</span>
           </TabsTrigger>
           <TabsTrigger value="doctor-schedule" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Calendar className="w-4 h-4" />
-            <span className="hidden sm:inline">Doctor Appointment</span>
-            <span className="sm:hidden">Doctor</span>
+            <span className="hidden sm:inline">{translations.doctor_appointment}</span>
+            <span className="sm:hidden">{translations.doctor}</span>
           </TabsTrigger>
           <TabsTrigger value="medication-alarm" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Clock className="w-4 h-4" />
-            <span className="hidden sm:inline">Medication Alarms</span>
-            <span className="sm:hidden">Alarms</span>
+            <span className="hidden sm:inline">{translations.medication_alarms}</span>
+            <span className="sm:hidden">{translations.alarms}</span>
           </TabsTrigger>
           <TabsTrigger value="medical-history" className="flex flex-col items-center gap-1 p-3 text-xs">
             <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Medical History</span>
-            <span className="sm:hidden">History</span>
+            <span className="hidden sm:inline">{translations.medical_history}</span>
+            <span className="sm:hidden">{translations.history}</span>
           </TabsTrigger>
           <TabsTrigger value="voice-support" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Phone className="w-4 h-4" />
-            <span className="hidden sm:inline">Voice Support</span>
-            <span className="sm:hidden">Voice</span>
+            <span className="hidden sm:inline">{translations.voice_support}</span>
+            <span className="sm:hidden">{translations.voice}</span>
           </TabsTrigger>
           <TabsTrigger value="ai-assistant" className="flex flex-col items-center gap-1 p-3 text-xs">
             <Bot className="w-4 h-4" />
-            <span className="hidden sm:inline">AI Assistant</span>
-            <span className="sm:hidden">AI Chat</span>
+            <span className="hidden sm:inline">{translations.ai_assistant}</span>
+            <span className="sm:hidden">{translations.ai_chat}</span>
           </TabsTrigger>
         </TabsList>
 
