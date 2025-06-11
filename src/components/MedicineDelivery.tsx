@@ -6,8 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Pill, MapPin, Clock, Phone, Truck, Camera, User, Upload, CheckCircle, CreditCard, Smartphone, Banknote, Calculator } from 'lucide-react';
+import { Pill, MapPin, Camera, Truck, User, Upload } from 'lucide-react';
+import OrderSummary from './medicine/OrderSummary';
+import PaymentMethods from './medicine/PaymentMethods';
+import PrescriptionUpload from './medicine/PrescriptionUpload';
+import OrderConfirmation from './medicine/OrderConfirmation';
 
 interface MedicineDeliveryProps {
   language: string;
@@ -37,21 +40,20 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardName, setCardName] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Mock medicines from prescription analysis
-  const prescriptionMedicines: Medicine[] = [
-    { name: 'Paracetamol 500mg (10 tablets)', price: 25, quantity: 1, available: true },
-    { name: 'Amoxicillin 250mg (10 capsules)', price: 120, quantity: 1, available: true },
-    { name: 'Vitamin D3 (4 tablets)', price: 80, quantity: 1, available: true }
-  ];
+  // Mock medicines from prescription analysis with very low prices
+  const [prescriptionMedicines, setPrescriptionMedicines] = useState<Medicine[]>([
+    { name: 'Paracetamol 500mg (10 tablets)', price: 15, quantity: 1, available: true },
+    { name: 'Amoxicillin 250mg (10 capsules)', price: 25, quantity: 1, available: true },
+    { name: 'Vitamin D3 (4 tablets)', price: 12, quantity: 1, available: true }
+  ]);
 
   const deliveryOptions = [
-    { id: 'express', label: '1-2 Hours', price: 50, icon: '🚀' },
-    { id: 'standard', label: '3-6 Hours', price: 20, icon: '🚚' },
-    { id: 'scheduled', label: 'Schedule Later', price: 10, icon: '📅' }
+    { id: 'express', label: '1-2 Hours', price: 15, icon: '🚀' },
+    { id: 'standard', label: '3-6 Hours', price: 8, icon: '🚚' },
+    { id: 'scheduled', label: 'Schedule Later', price: 5, icon: '📅' }
   ];
 
   const nearbyPharmacies = [
@@ -61,21 +63,21 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
     { name: 'Wellness Pharmacy', distance: '2.1 km', rating: '4.4', available: true }
   ];
 
-  const paymentMethods = [
-    { id: 'upi', label: 'UPI Payment', icon: <Smartphone className="w-5 h-5" />, description: 'Pay using UPI ID' },
-    { id: 'card', label: 'Credit/Debit Card', icon: <CreditCard className="w-5 h-5" />, description: 'Visa, Mastercard, RuPay' },
-    { id: 'cod', label: 'Cash on Delivery', icon: <Banknote className="w-5 h-5" />, description: 'Pay when delivered' }
-  ];
-
   // Calculate pricing
   const medicineTotal = prescriptionMedicines.reduce((sum, med) => sum + (med.price * med.quantity), 0);
-  const deliveryCharges = deliveryOptions.find(opt => opt.id === urgency)?.price || 20;
+  const deliveryCharges = deliveryOptions.find(opt => opt.id === urgency)?.price || 8;
   const subtotal = medicineTotal + deliveryCharges;
-  const isFirstTimeCustomer = true; // Mock - can be determined from user profile
-  const discount = isFirstTimeCustomer ? Math.round(subtotal * 0.15) : 0; // 15% first-time discount
+  const isFirstTimeCustomer = true;
+  const discount = isFirstTimeCustomer ? Math.round(subtotal * 0.50) : 0; // 50% first-time discount
   const afterDiscount = subtotal - discount;
-  const gst = Math.round(afterDiscount * 0.18); // 18% GST
+  const gst = Math.round(afterDiscount * 0.18);
   const totalAmount = afterDiscount + gst;
+
+  const handleQuantityChange = (index: number, newQuantity: number) => {
+    const updatedMedicines = [...prescriptionMedicines];
+    updatedMedicines[index].quantity = newQuantity;
+    setPrescriptionMedicines(updatedMedicines);
+  };
 
   const handleOrderSubmit = () => {
     if (prescriptionImage || medicines) {
@@ -107,10 +109,7 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
       .catch((error) => {
         console.error('Error accessing camera:', error);
         setIsCapturing(false);
-        fileInputRef.current?.click();
       });
-    } else {
-      fileInputRef.current?.click();
     }
   };
 
@@ -142,13 +141,6 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setPrescriptionImage(file);
-    }
-  };
-
   const cancelCapture = () => {
     setIsCapturing(false);
     if (videoRef.current && videoRef.current.srcObject) {
@@ -157,78 +149,31 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
     }
   };
 
+  const handlePlaceAnotherOrder = () => {
+    setOrderPlaced(false);
+    setShowPayment(false);
+    setPrescriptionImage(null);
+    setMedicines('');
+    setPaymentMethod('');
+    setUpiId('');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvv('');
+    setCardName('');
+    setPrescriptionMedicines([
+      { name: 'Paracetamol 500mg (10 tablets)', price: 15, quantity: 1, available: true },
+      { name: 'Amoxicillin 250mg (10 capsules)', price: 25, quantity: 1, available: true },
+      { name: 'Vitamin D3 (4 tablets)', price: 12, quantity: 1, available: true }
+    ]);
+  };
+
   if (orderPlaced) {
     return (
-      <Card className="bg-green-50 border-green-200">
-        <CardHeader>
-          <CardTitle className="text-green-800 flex items-center gap-2">
-            <Truck className="w-5 h-5" />
-            Order Confirmed!
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Order Details</h3>
-            <div className="space-y-2 text-sm">
-              <div><strong>Order ID:</strong> MD-{Math.random().toString(36).substr(2, 8).toUpperCase()}</div>
-              <div><strong>Total Paid:</strong> ₹{totalAmount}</div>
-              <div><strong>Payment Method:</strong> {paymentMethods.find(p => p.id === paymentMethod)?.label}</div>
-              <div><strong>Estimated Delivery:</strong> 45-90 minutes</div>
-              <div><strong>Delivery Partner:</strong> Raj Kumar (+91 98765-43210)</div>
-              <div><strong>Pharmacy:</strong> Apollo Pharmacy (0.8 km away)</div>
-            </div>
-          </div>
-          
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-800 mb-2">Delivery Tracking</h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Order confirmed</span>
-                <span className="text-xs text-gray-500">2 min ago</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm">Pharmacy processing</span>
-                <span className="text-xs text-gray-500">Current</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                <span className="text-sm text-gray-500">Out for delivery</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                <span className="text-sm text-gray-500">Delivered</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <Button className="flex-1">
-              <Phone className="w-4 h-4 mr-2" />
-              Call Delivery Partner
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <MapPin className="w-4 h-4 mr-2" />
-              Track Live Location
-            </Button>
-          </div>
-
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => {
-              setOrderPlaced(false);
-              setShowPayment(false);
-              setPrescriptionImage(null);
-              setMedicines('');
-              setPaymentMethod('');
-            }}
-          >
-            Place Another Order
-          </Button>
-        </CardContent>
-      </Card>
+      <OrderConfirmation 
+        totalAmount={totalAmount}
+        paymentMethod={paymentMethod}
+        onPlaceAnotherOrder={handlePlaceAnotherOrder}
+      />
     );
   }
 
@@ -270,182 +215,30 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
   if (showPayment) {
     return (
       <div className="space-y-6">
-        {/* Order Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-green-600" />
-              Order Summary & Payment
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Medicine List */}
-            <div>
-              <h3 className="font-semibold mb-3">Medicines</h3>
-              <div className="space-y-2">
-                {prescriptionMedicines.map((medicine, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <span className="font-medium">{medicine.name}</span>
-                      <p className="text-sm text-gray-600">Qty: {medicine.quantity}</p>
-                    </div>
-                    <span className="font-semibold">₹{medicine.price * medicine.quantity}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bill Breakdown */}
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Bill Details</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Medicine Total</span>
-                  <span>₹{medicineTotal}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Delivery Charges ({deliveryOptions.find(opt => opt.id === urgency)?.label})</span>
-                  <span>₹{deliveryCharges}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                {isFirstTimeCustomer && (
-                  <div className="flex justify-between text-green-600">
-                    <span className="flex items-center gap-1">
-                      First Time Customer Discount (15%)
-                      <Badge variant="secondary" className="text-xs">NEW</Badge>
-                    </span>
-                    <span>-₹{discount}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>After Discount</span>
-                  <span>₹{afterDiscount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>GST (18%)</span>
-                  <span>₹{gst}</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                  <span>Total Amount</span>
-                  <span>₹{totalAmount}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Methods */}
-            <div>
-              <h3 className="font-semibold mb-3">Select Payment Method</h3>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                <div className="space-y-3">
-                  {paymentMethods.map((method) => (
-                    <div key={method.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
-                      <RadioGroupItem value={method.id} id={method.id} />
-                      <div className="flex items-center gap-3 flex-1">
-                        {method.icon}
-                        <div>
-                          <Label htmlFor={method.id} className="font-medium cursor-pointer">
-                            {method.label}
-                          </Label>
-                          <p className="text-sm text-gray-600">{method.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* Payment Details Forms */}
-            {paymentMethod === 'upi' && (
-              <div className="space-y-3">
-                <Label htmlFor="upiId">UPI ID</Label>
-                <Input
-                  id="upiId"
-                  placeholder="yourname@paytm / yourname@phonepe"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                />
-              </div>
-            )}
-
-            {paymentMethod === 'card' && (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="cardName">Cardholder Name</Label>
-                  <Input
-                    id="cardName"
-                    placeholder="Name on card"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    maxLength={19}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="cardExpiry">Expiry Date</Label>
-                    <Input
-                      id="cardExpiry"
-                      placeholder="MM/YY"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      maxLength={5}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cardCvv">CVV</Label>
-                    <Input
-                      id="cardCvv"
-                      placeholder="123"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      maxLength={3}
-                      type="password"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {paymentMethod === 'cod' && (
-              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <p className="text-sm text-yellow-800">
-                  <strong>Cash on Delivery:</strong> You can pay ₹{totalAmount} in cash when your order is delivered. 
-                  Please keep exact change ready.
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowPayment(false)}
-                className="flex-1"
-              >
-                Back to Order
-              </Button>
-              <Button 
-                onClick={handlePaymentSubmit}
-                disabled={!paymentMethod || (paymentMethod === 'upi' && !upiId) || (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv || !cardName))}
-                className="flex-1"
-                size="lg"
-              >
-                {paymentMethod === 'cod' ? 'Confirm Order' : `Pay ₹${totalAmount}`}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <OrderSummary 
+          medicines={prescriptionMedicines}
+          onQuantityChange={handleQuantityChange}
+          deliveryCharges={deliveryCharges}
+          deliveryOption={urgency}
+          onProceedToPayment={() => {}}
+        />
+        <PaymentMethods 
+          totalAmount={totalAmount}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          upiId={upiId}
+          setUpiId={setUpiId}
+          cardNumber={cardNumber}
+          setCardNumber={setCardNumber}
+          cardExpiry={cardExpiry}
+          setCardExpiry={setCardExpiry}
+          cardCvv={cardCvv}
+          setCardCvv={setCardCvv}
+          cardName={cardName}
+          setCardName={setCardName}
+          onPaymentSubmit={handlePaymentSubmit}
+          onBack={() => setShowPayment(false)}
+        />
       </div>
     );
   }
@@ -459,7 +252,8 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
             Medicine Delivery Service
           </CardTitle>
           <p className="text-gray-600">
-            Order medicines from nearby pharmacies with quick delivery in your area
+            Order medicines from nearby pharmacies with quick delivery in your area. 
+            <span className="text-green-600 font-medium"> New customers get 50% off!</span>
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -522,56 +316,11 @@ const MedicineDelivery: React.FC<MedicineDeliveryProps> = ({ language }) => {
 
           {/* Medicine Details */}
           {orderType === 'prescription' ? (
-            <div>
-              <Label>Upload Prescription</Label>
-              {prescriptionImage ? (
-                <div className="border-2 border-green-300 rounded-lg p-4 bg-green-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-green-800 font-medium">
-                        Prescription captured: {prescriptionImage.name}
-                      </span>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setPrescriptionImage(null)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                  <p className="text-sm text-green-600 mt-2">
-                    ✅ Your prescription has been uploaded successfully
-                  </p>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">Take a clear photo of your prescription</p>
-                  <div className="flex gap-3 justify-center">
-                    <Button onClick={handleCaptureClick}>
-                      <Camera className="w-4 h-4 mr-2" />
-                      Capture Prescription
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload File
-                    </Button>
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    accept="image/*,.pdf"
-                    className="hidden"
-                  />
-                </div>
-              )}
-            </div>
+            <PrescriptionUpload 
+              prescriptionImage={prescriptionImage}
+              setPrescriptionImage={setPrescriptionImage}
+              onCaptureClick={handleCaptureClick}
+            />
           ) : (
             <div>
               <Label htmlFor="medicines">Medicine List</Label>
