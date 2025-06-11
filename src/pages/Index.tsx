@@ -1,24 +1,43 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LocationPermission from "@/components/LocationPermission";
-import SymptomChecker from "@/components/SymptomChecker";
-import AIChatbot from "@/components/AIChatbot";
-import MedicineDelivery from "@/components/MedicineDelivery";
-import DoctorSchedule from "@/components/DoctorSchedule";
-import VoiceCall from "@/components/VoiceCall";
-import { MedicationAlarm } from "@/components/MedicationAlarm";
-import { MedicalHistory } from "@/components/MedicalHistory";
+import LocationPermissionModal from "@/components/LocationPermissionModal";
+import HealthcareTabs from "@/components/HealthcareTabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Heart, Pill, Calendar, Phone, MapPin } from "lucide-react";
 
 const Index = () => {
   const { user } = useAuth();
   const { translations, language } = useLanguage();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
+
+  useEffect(() => {
+    // Check if location permission was already requested
+    const locationRequested = localStorage.getItem('locationRequested');
+    if (!locationRequested) {
+      setShowLocationModal(true);
+    }
+  }, []);
+
+  const handleLocationPermission = (granted: boolean) => {
+    setLocationPermissionGranted(granted);
+    localStorage.setItem('locationRequested', 'true');
+    if (granted) {
+      localStorage.setItem('locationGranted', 'true');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+      <LocationPermissionModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onPermissionGranted={handleLocationPermission}
+      />
+
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="text-center mb-12">
@@ -114,26 +133,13 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Main Components */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Location Services */}
+        <div className="mb-8">
           <LocationPermission />
-          <SymptomChecker language={language} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <MedicineDelivery language={language} />
-          <DoctorSchedule language={language} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <MedicationAlarm />
-          <MedicalHistory />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <VoiceCall language={language} />
-          <AIChatbot />
-        </div>
+        {/* Healthcare Services Tabs */}
+        <HealthcareTabs language={language} />
       </div>
     </div>
   );
