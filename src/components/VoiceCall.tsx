@@ -31,7 +31,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     },
     male: {
       'Dr. Rajesh Kumar': 'eyVoIoi3vo6sJoHOKgAc', // Your specified male voice
-      'Dr. Amit Patel': 'TX3LPaxmHKxFdv7VOQHJ', // Liam
+      'Dr. Amit Patel': 'eyVoIoi3vo6sJoHOKgAc', // Same voice ID for both male doctors
     }
   };
 
@@ -90,6 +90,28 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const handleUserQuery = async (query: string) => {
     const lowerQuery = query.toLowerCase();
     let response = '';
+
+    // Check if user wants to hang up the call
+    if (lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') || 
+        lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
+        lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')) {
+      response = `Thank you for calling Aasha AI Seva. I hope I was able to help you with your health concerns. Take care and feel free to call us anytime you need medical assistance. Have a great day!`;
+      
+      // Play goodbye message and then end call
+      if (selectedStaff) {
+        const voiceId = selectedStaff.gender === 'female' 
+          ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
+          : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male];
+        
+        await ttsService.speak(response, voiceId);
+      }
+      
+      // End the call after playing goodbye message
+      setTimeout(() => {
+        endCall();
+      }, 5000);
+      return;
+    }
 
     // Intelligent response based on user query
     if (lowerQuery.includes('medicine') || lowerQuery.includes('tablet') || lowerQuery.includes('capsule')) {
@@ -300,6 +322,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
               <div className="text-center mb-4">
                 <h4 className="font-medium text-blue-800 mb-2">🔊 AI Assistant Ready to Listen</h4>
                 <p className="text-sm text-gray-600 mb-4">I'm ready to hear your health concerns. Please speak clearly:</p>
+                <p className="text-xs text-gray-500 mb-4">Say "hang up", "end call", or "goodbye" to end the conversation</p>
               </div>
               
               <div className="text-center">
@@ -464,6 +487,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                     <strong>Say:</strong> "Need medicine delivery"<br/>
                     <em>Connects to pharmacy</em>
                   </div>
+                </div>
+                <div className="bg-white p-2 rounded mt-2">
+                  <strong>Say:</strong> "Goodbye" or "Hang up"<br/>
+                  <em>To end the call</em>
                 </div>
               </div>
             </CardContent>
