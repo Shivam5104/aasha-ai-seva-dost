@@ -4,22 +4,22 @@
 // Extend the Window interface to include speech recognition APIs
 declare global {
   interface Window {
-    webkitSpeechRecognition?: typeof SpeechRecognition;
-    SpeechRecognition?: typeof SpeechRecognition;
+    webkitSpeechRecognition?: new() => SpeechRecognition;
+    SpeechRecognition?: new() => SpeechRecognition;
   }
 
   interface SpeechRecognition extends EventTarget {
     continuous: boolean;
     interimResults: boolean;
     lang: string;
-    onresult: (event: SpeechRecognitionEvent) => void;
-    onerror: (event: SpeechRecognitionErrorEvent) => void;
-    onend: () => void;
+    onresult: ((event: SpeechRecognitionEvent) => void) | null;
+    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+    onend: (() => void) | null;
     start(): void;
     stop(): void;
   }
 
-  interface SpeechRecognitionEvent {
+  interface SpeechRecognitionEvent extends Event {
     resultIndex: number;
     results: SpeechRecognitionResultList;
   }
@@ -46,16 +46,6 @@ declare global {
     error: string;
     message: string;
   }
-
-  var SpeechRecognition: {
-    prototype: SpeechRecognition;
-    new(): SpeechRecognition;
-  };
-
-  var webkitSpeechRecognition: {
-    prototype: SpeechRecognition;
-    new(): SpeechRecognition;
-  };
 }
 
 export {};

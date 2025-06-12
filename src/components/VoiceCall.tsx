@@ -35,17 +35,18 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }
   };
 
-  // Initialize speech recognition
+  // Initialize speech recognition with proper type handling
   useEffect(() => {
-    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      const SpeechRecognitionAPI = window.webkitSpeechRecognition || window.SpeechRecognition;
+    if (typeof window !== 'undefined') {
+      const SpeechRecognitionAPI = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      
       if (SpeechRecognitionAPI) {
-        const recognitionInstance = new SpeechRecognitionAPI();
+        const recognitionInstance = new SpeechRecognitionAPI() as SpeechRecognition;
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
         recognitionInstance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
 
-        recognitionInstance.onresult = (event) => {
+        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
           let finalTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
@@ -58,7 +59,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
           }
         };
 
-        recognitionInstance.onerror = (event) => {
+        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
           console.error('Speech recognition error:', event.error);
           setIsListening(false);
         };
