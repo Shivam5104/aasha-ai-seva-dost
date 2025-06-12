@@ -91,25 +91,13 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     const lowerQuery = query.toLowerCase();
     let response = '';
 
-    // Check if user wants to hang up the call
+    // Check if user wants to hang up the call - END INSTANTLY
     if (lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') || 
         lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
         lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')) {
-      response = `Thank you for calling Aasha AI Seva. I hope I was able to help you with your health concerns. Take care and feel free to call us anytime you need medical assistance. Have a great day!`;
       
-      // Play goodbye message and then end call
-      if (selectedStaff) {
-        const voiceId = selectedStaff.gender === 'female' 
-          ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
-          : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male];
-        
-        await ttsService.speak(response, voiceId);
-      }
-      
-      // End the call after playing goodbye message
-      setTimeout(() => {
-        endCall();
-      }, 5000);
+      // End the call immediately without any delay
+      endCall();
       return;
     }
 
