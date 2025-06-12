@@ -21,7 +21,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userQuery, setUserQuery] = useState('');
-  const [recognition, setRecognition] = useState<any>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
   // Updated Voice IDs including the new ones you specified
   const voiceIds = {
@@ -37,36 +37,38 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
   // Initialize speech recognition
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognitionAPI = window.webkitSpeechRecognition || window.SpeechRecognition;
+      if (SpeechRecognitionAPI) {
+        const recognitionInstance = new SpeechRecognitionAPI();
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
+        recognitionInstance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
 
-      recognitionInstance.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+        recognitionInstance.onresult = (event) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
           }
-        }
-        if (finalTranscript) {
-          setUserQuery(finalTranscript);
-          handleUserQuery(finalTranscript);
-        }
-      };
+          if (finalTranscript) {
+            setUserQuery(finalTranscript);
+            handleUserQuery(finalTranscript);
+          }
+        };
 
-      recognitionInstance.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
+        recognitionInstance.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
 
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-      };
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
 
-      setRecognition(recognitionInstance);
+        setRecognition(recognitionInstance);
+      }
     }
   }, [language]);
 
