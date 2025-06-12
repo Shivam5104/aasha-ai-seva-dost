@@ -16,23 +16,111 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [supportRequest, setSupportRequest] = useState(null);
-  const [callPhase, setCallPhase] = useState('welcome'); // welcome, menu, connecting, connected
+  const [callPhase, setCallPhase] = useState('welcome');
   const [apiKey, setApiKey] = useState('');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
+  const [recognition, setRecognition] = useState<any>(null);
 
-  // Voice IDs for ElevenLabs
+  // Updated Voice IDs including the new ones you specified
   const voiceIds = {
     female: {
-      'Dr. Priya Sharma': 'EXAVITQu4vr4xnSDxMaL', // Sarah
+      'Dr. Priya Sharma': 'broqrJkktxd1CclKTudW', // Your specified female voice
       'Nurse Sunita': '9BWtsMINqrJLrRacOk9x', // Aria
     },
     male: {
-      'Dr. Rajesh Kumar': 'onwK4e9ZLuTAKqWW03F9', // Daniel
+      'Dr. Rajesh Kumar': 'eyVoIoi3vo6sJoHOKgAc', // Your specified male voice
       'Dr. Amit Patel': 'TX3LPaxmHKxFdv7VOQHJ', // Liam
     }
   };
 
-  // ... keep existing code (supportTypes array)
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = true;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+
+      recognitionInstance.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          setUserQuery(finalTranscript);
+          handleUserQuery(finalTranscript);
+        }
+      };
+
+      recognitionInstance.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+    }
+  }, [language]);
+
+  const startListening = () => {
+    if (recognition) {
+      setIsListening(true);
+      recognition.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition) {
+      setIsListening(false);
+      recognition.stop();
+    }
+  };
+
+  const handleUserQuery = async (query: string) => {
+    const lowerQuery = query.toLowerCase();
+    let response = '';
+
+    // Intelligent response based on user query
+    if (lowerQuery.includes('medicine') || lowerQuery.includes('tablet') || lowerQuery.includes('capsule')) {
+      response = `I understand you need help with medicines. Let me connect you to our pharmacy specialist. They can help you with medicine availability, dosage instructions, and home delivery options. Please hold while I transfer your call.`;
+    } else if (lowerQuery.includes('doctor') || lowerQuery.includes('appointment') || lowerQuery.includes('consultation')) {
+      response = `You're looking for a doctor consultation. I can schedule an appointment for you with our available doctors. Would you prefer a video consultation or in-person visit? Please specify your preferred time and any specific medical concerns.`;
+    } else if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent') || lowerQuery.includes('pain')) {
+      response = `This sounds like it might be urgent. I'm immediately connecting you to our emergency medical team. Please stay on the line and describe your symptoms clearly. If this is a life-threatening emergency, please also call 108.`;
+    } else if (lowerQuery.includes('delivery') || lowerQuery.includes('order') || lowerQuery.includes('track')) {
+      response = `I can help you with medicine delivery and order tracking. Let me check your recent orders and provide you with real-time delivery updates. May I have your order number or phone number to track your delivery?`;
+    } else if (lowerQuery.includes('fever') || lowerQuery.includes('cold') || lowerQuery.includes('headache')) {
+      response = `I understand you're experiencing ${lowerQuery.includes('fever') ? 'fever' : lowerQuery.includes('cold') ? 'cold symptoms' : 'headache'}. Let me connect you to our medical team who can provide proper guidance and recommend appropriate treatment. Please describe your symptoms in detail.`;
+    } else {
+      response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
+    }
+
+    // Play the intelligent response
+    if (selectedStaff) {
+      const voiceId = selectedStaff.gender === 'female' 
+        ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
+        : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male];
+      
+      await ttsService.speak(response, voiceId);
+    }
+
+    // Update call phase based on query
+    setTimeout(() => {
+      if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent')) {
+        setCallPhase('emergency');
+      } else {
+        setCallPhase('specialist_connecting');
+      }
+    }, 3000);
+  };
 
   const supportTypes = [
     {
@@ -66,7 +154,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       status: 'Available',
       rating: '4.8',
       gender: 'female',
-      welcomeMessage: 'Welcome to Aasha AI Seva! My name is Dr. Priya Sharma. How may I help you today?'
+      welcomeMessage: 'Welcome to Aasha AI Seva! My name is Dr. Priya Sharma. I am here to listen to your health concerns and provide you with the best possible care. Please tell me how I can help you today.'
     },
     {
       name: 'Dr. Rajesh Kumar',
@@ -75,7 +163,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       status: 'Available',
       rating: '4.9',
       gender: 'male',
-      welcomeMessage: 'Welcome to Aasha AI Seva! My name is Dr. Rajesh Kumar. How may I help you today?'
+      welcomeMessage: 'Namaste! Welcome to Aasha AI Seva! I am Dr. Rajesh Kumar. I am ready to listen to your health queries and provide you with expert medical guidance. Please share your concerns with me.'
     },
     {
       name: 'Nurse Sunita',
@@ -84,7 +172,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       status: 'Busy',
       rating: '4.7',
       gender: 'female',
-      welcomeMessage: 'Welcome to Aasha AI Seva! My name is Nurse Sunita. How may I help you today?'
+      welcomeMessage: 'Hello! Welcome to Aasha AI Seva! I am Nurse Sunita. I am here to help you with your healthcare needs and answer any questions you may have. How can I assist you today?'
     },
     {
       name: 'Dr. Amit Patel',
@@ -93,7 +181,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       status: 'Available',
       rating: '4.6',
       gender: 'male',
-      welcomeMessage: 'Welcome to Aasha AI Seva! My name is Dr. Amit Patel. How may I help you today?'
+      welcomeMessage: 'Welcome to Aasha AI Seva! I am Dr. Amit Patel. I am committed to providing you with quality healthcare support. Please tell me about your health concerns so I can help you better.'
     }
   ];
 
@@ -110,12 +198,12 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   };
 
   const playMenuOptions = async () => {
-    const menuMessage = "Please select an option: Press 1 for medicines intake queries, Press 2 for home visit regarding queries";
+    const menuMessage = "Thank you for sharing your concern. I am now ready to listen to your detailed query. Please speak clearly and tell me exactly what health issue you are facing so I can provide you with the most appropriate assistance.";
     await ttsService.speak(menuMessage, selectedStaff ? 
       (selectedStaff.gender === 'female' 
         ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
         : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male]
-      ) : 'EXAVITQu4vr4xnSDxMaL'
+      ) : 'broqrJkktxd1CclKTudW'
     );
   };
 
@@ -130,13 +218,15 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       setTimeout(() => playWelcomeMessage(staff), 1000);
     }
     
-    // Simulate call phases
+    // Move to listening phase
     setTimeout(() => {
-      setCallPhase('menu');
+      setCallPhase('listening');
       if (staff) {
         setTimeout(() => playMenuOptions(), 500);
+        // Auto-start listening after menu
+        setTimeout(() => startListening(), 3000);
       }
-    }, 3000);
+    }, 6000);
     
     const timer = setInterval(() => {
       setCallDuration(prev => prev + 1);
@@ -153,22 +243,12 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }, 3000);
   };
 
-  const handleMenuOption = (option: number) => {
-    setCallPhase('connecting');
-    
-    const responseMessage = option === 1 
-      ? "Connecting you to our medicine specialist. Please hold."
-      : "Connecting you to our home visit coordinator. Please hold.";
-    
-    ttsService.speak(responseMessage);
-    
-    setTimeout(() => setCallPhase('connected'), 2000);
-  };
-
   const endCall = () => {
     setIsCallActive(false);
     setCallDuration(0);
     setCallPhase('welcome');
+    setUserQuery('');
+    stopListening();
   };
 
   const formatTime = (seconds: number) => {
@@ -183,7 +263,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
         <CardHeader>
           <CardTitle className="text-blue-800 flex items-center gap-2">
             <PhoneCall className="w-5 h-5" />
-            Voice Call Active
+            Voice Call Active - AI Assistant Listening
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -204,7 +284,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
           {callPhase === 'welcome' && (
             <div className="bg-white p-4 rounded-lg">
               <div className="text-center">
-                <h4 className="font-medium text-green-800 mb-2">🔊 Voice Message</h4>
+                <h4 className="font-medium text-green-800 mb-2">🔊 Welcome Message</h4>
                 <p className="text-sm text-gray-700 italic">
                   "{selectedStaff?.welcomeMessage || 'Welcome to Aasha AI Seva! How may I help you today?'}"
                 </p>
@@ -212,51 +292,55 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             </div>
           )}
 
-          {callPhase === 'menu' && (
+          {callPhase === 'listening' && (
             <div className="bg-white p-4 rounded-lg">
               <div className="text-center mb-4">
-                <h4 className="font-medium text-blue-800 mb-2">🔊 Please Select an Option</h4>
-                <p className="text-sm text-gray-600 mb-4">Press the number on your phone keypad:</p>
+                <h4 className="font-medium text-blue-800 mb-2">🔊 AI Assistant Ready to Listen</h4>
+                <p className="text-sm text-gray-600 mb-4">I'm ready to hear your health concerns. Please speak clearly:</p>
               </div>
-              <div className="space-y-2">
+              
+              <div className="text-center">
                 <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => handleMenuOption(1)}
+                  variant={isListening ? "destructive" : "default"}
+                  onClick={isListening ? stopListening : startListening}
+                  className="mb-4"
                 >
-                  <span className="font-mono mr-2">1.</span>
-                  Regarding medicines intake
+                  <Mic className="w-4 h-4 mr-2" />
+                  {isListening ? 'Stop Speaking' : 'Start Speaking'}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => handleMenuOption(2)}
-                >
-                  <span className="font-mono mr-2">2.</span>
-                  Home visit regarding queries
-                </Button>
+                
+                {isListening && (
+                  <div className="flex justify-center items-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-red-600 text-sm">Listening...</span>
+                  </div>
+                )}
+                
+                {userQuery && (
+                  <div className="bg-gray-50 p-3 rounded-lg mt-4">
+                    <h5 className="font-medium text-gray-700 mb-1">You said:</h5>
+                    <p className="text-sm text-gray-600 italic">"{userQuery}"</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {callPhase === 'connecting' && (
-            <div className="bg-yellow-50 p-4 rounded-lg text-center">
+          {callPhase === 'emergency' && (
+            <div className="bg-red-50 p-4 rounded-lg text-center">
               <div className="animate-pulse">
-                <h4 className="font-medium text-yellow-800 mb-2">Connecting to Doctor...</h4>
-                <p className="text-sm text-yellow-600">Please wait while we connect you to a medical professional</p>
+                <h4 className="font-medium text-red-800 mb-2">🚨 Emergency Protocol Activated</h4>
+                <p className="text-sm text-red-600">Connecting to emergency medical team immediately...</p>
               </div>
             </div>
           )}
 
-          {callPhase === 'connected' && (
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">Call Status</span>
-                <Badge className="bg-green-100 text-green-800">Connected to Doctor</Badge>
+          {callPhase === 'specialist_connecting' && (
+            <div className="bg-green-50 p-4 rounded-lg text-center">
+              <div className="animate-pulse">
+                <h4 className="font-medium text-green-800 mb-2">🔄 Connecting to Specialist</h4>
+                <p className="text-sm text-green-600">Based on your query, connecting you to the right medical expert...</p>
               </div>
-              <p className="text-sm text-gray-600">
-                You are now connected to a medical professional. Please describe your concerns.
-              </p>
             </div>
           )}
 
@@ -312,10 +396,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="w-5 h-5 text-purple-600" />
-            Voice Support in Your Language
+            AI Voice Support - Speak Your Query
           </CardTitle>
           <p className="text-gray-600">
-            Call our medical support team in your preferred language. Perfect for rural areas or when typing is difficult.
+            Call our AI medical support team that can understand and respond to your voice queries in real-time. Just speak your health concerns naturally.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -324,9 +408,9 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             <Card className="bg-yellow-50 border-yellow-200">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <h4 className="font-medium text-yellow-800">Enhanced Voice Experience</h4>
+                  <h4 className="font-medium text-yellow-800">Premium Voice Experience</h4>
                   <p className="text-sm text-yellow-600">
-                    Add your ElevenLabs API key for high-quality AI voices (optional)
+                    Add your ElevenLabs API key for high-quality AI voices that can understand and respond to your queries
                   </p>
                   {showApiKeyInput ? (
                     <div className="flex gap-2">
@@ -360,60 +444,31 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             </Card>
           )}
 
-          {/* Medicine Delivery Helpline */}
-          <Card className="bg-orange-50 border-orange-200">
+          {/* Voice Query Feature Highlight */}
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-orange-800 flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5" />
-                    Medicine Delivery Helpline
-                  </h4>
-                  <p className="text-sm text-orange-600">Direct support for medicine delivery queries</p>
-                  <p className="text-sm font-medium text-orange-800 mt-1">📞 +91 98765-43210</p>
+              <div className="text-center">
+                <h4 className="font-medium text-purple-800 mb-2">🎤 New: Voice Query Support</h4>
+                <p className="text-sm text-purple-600 mb-3">
+                  Our AI assistants can now listen to your health concerns and provide intelligent responses based on what you say.
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-white p-2 rounded">
+                    <strong>Say:</strong> "I have fever"<br/>
+                    <em>AI responds with fever care</em>
+                  </div>
+                  <div className="bg-white p-2 rounded">
+                    <strong>Say:</strong> "Need medicine delivery"<br/>
+                    <em>Connects to pharmacy</em>
+                  </div>
                 </div>
-                <Button 
-                  className="bg-orange-600 hover:bg-orange-700"
-                  onClick={() => window.open('tel:+919876543210', '_self')}
-                >
-                  <Phone className="w-4 h-4 mr-2" />
-                  Call Now
-                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Quick Call Options */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {supportTypes.map((type) => (
-              <Card 
-                key={type.id}
-                className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-purple-200"
-                onClick={() => startCall(type.id)}
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="text-3xl mb-3">{type.icon}</div>
-                  <h3 className="font-semibold mb-2">{type.title}</h3>
-                  <p className="text-sm text-gray-600 mb-3">{type.description}</p>
-                  <div className="space-y-1">
-                    {type.languages.map((lang, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs mr-1">
-                        {lang}
-                      </Badge>
-                    ))}
-                  </div>
-                  <Button className="w-full mt-3" size="sm">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Call Now
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
           {/* Available Medical Staff */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Available Medical Staff</h3>
+            <h3 className="font-semibold text-lg mb-4">AI Voice Assistants (Enhanced Voices)</h3>
             <div className="space-y-3">
               {availableOperators.map((operator, index) => (
                 <Card key={index}>
@@ -427,7 +482,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                           <h4 className="font-medium flex items-center gap-2">
                             {operator.name}
                             <Badge variant="outline" className="text-xs">
-                              {operator.gender === 'female' ? '♀️' : '♂️'} {operator.gender}
+                              {operator.gender === 'female' ? '♀️' : '♂️'} AI Voice
                             </Badge>
                           </h4>
                           <p className="text-sm text-gray-600">{operator.specialty}</p>
@@ -454,10 +509,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                           <Button 
                             size="sm" 
                             className="mt-2"
-                            onClick={() => startCall('direct', operator)}
+                            onClick={() => startCall('voice_query', operator)}
                           >
                             <Phone className="w-3 h-3 mr-1" />
-                            Call
+                            Call & Speak
                           </Button>
                         )}
                       </div>
@@ -468,69 +523,28 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             </div>
           </div>
 
-          {/* Medical Specialty Info */}
-          <Card className="bg-gray-50">
-            <CardHeader>
-              <CardTitle className="text-lg">Medical Specialties Explained</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-medium mb-2 text-blue-600">General Medicine</h4>
-                  <p className="text-sm text-gray-600">
-                    Treats common health issues across all age groups like fever, cold, diabetes, hypertension, and routine check-ups.
-                  </p>
+          <Card className="bg-orange-50 border-orange-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-orange-800 flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5" />
+                    Medicine Delivery Helpline
+                  </h4>
+                  <p className="text-sm text-orange-600">Direct support for medicine delivery queries</p>
+                  <p className="text-sm font-medium text-orange-800 mt-1">📞 +91 98765-43210</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-medium mb-2 text-green-600">Internal Medicine</h4>
-                  <p className="text-sm text-gray-600">
-                    Specializes in adult diseases and complex medical conditions requiring specialized internal organ care.
-                  </p>
-                </div>
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={() => window.open('tel:+919876543210', '_self')}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call Now
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* How it Works */}
-          <Card className="bg-gray-50">
-            <CardHeader>
-              <CardTitle className="text-lg">How Voice Support Works</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Phone className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h4 className="font-medium mb-1">Call</h4>
-                  <p className="text-sm text-gray-600">Make a voice call in your language</p>
-                </div>
-                <div>
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Mic className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h4 className="font-medium mb-1">Choose Option</h4>
-                  <p className="text-sm text-gray-600">Select from interactive menu</p>
-                </div>
-                <div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <User className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <h4 className="font-medium mb-1">Connect to Doctor</h4>
-                  <p className="text-sm text-gray-600">Speak with real medical professional</p>
-                </div>
-                <div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <MapPin className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <h4 className="font-medium mb-1">Get Solution</h4>
-                  <p className="text-sm text-gray-600">Receive treatment or medicine delivery</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Emergency Call */}
           <Card className="bg-red-50 border-red-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
