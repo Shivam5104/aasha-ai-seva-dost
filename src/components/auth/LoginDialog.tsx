@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from './AuthProvider';
 import { toast } from 'sonner';
-import { Eye, EyeOff, User, Phone, Calendar, MapPin } from 'lucide-react';
+import { Eye, EyeOff, User, Phone, Calendar, MapPin, Mail, CheckCircle } from 'lucide-react';
 
 interface LoginDialogProps {
   open: boolean;
@@ -18,6 +18,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const { signIn, signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -42,7 +43,11 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       const { error } = await signIn(formData.email, formData.password);
       
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and click the confirmation link before signing in.');
+        } else {
+          toast.error(error.message);
+        }
       } else {
         toast.success('Welcome back!');
         onOpenChange(false);
@@ -59,7 +64,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setLoading(true);
 
     try {
-      const { error } = await signUp(formData.email, formData.password, {
+      const { data, error } = await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
         phone: formData.phone,
         date_of_birth: formData.dateOfBirth,
@@ -72,8 +77,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Account created! Please check your email to verify your account.');
-        onOpenChange(false);
+        setEmailSent(true);
+        toast.success('Account created! Please check your email to confirm your account.');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
@@ -81,6 +86,57 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       setLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold text-blue-600">
+              Check Your Email
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center py-8">
+            <div className="flex justify-center mb-6">
+              <div className="bg-green-100 p-4 rounded-full">
+                <Mail className="h-12 w-12 text-green-600" />
+              </div>
+            </div>
+            
+            <h3 className="text-lg font-semibold mb-4">Confirmation Email Sent!</h3>
+            
+            <p className="text-gray-600 mb-6">
+              We've sent a confirmation email to <strong>{formData.email}</strong>. 
+              Please check your inbox and click the confirmation link to activate your account.
+            </p>
+
+            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
+                <span className="font-medium text-blue-800">Next Steps:</span>
+              </div>
+              <ol className="text-sm text-blue-700 text-left space-y-1">
+                <li>1. Check your email inbox (and spam folder)</li>
+                <li>2. Click the confirmation link in the email</li>
+                <li>3. Return here to sign in with your credentials</li>
+              </ol>
+            </div>
+
+            <Button 
+              onClick={() => {
+                setEmailSent(false);
+                onOpenChange(false);
+              }}
+              className="w-full"
+            >
+              Got it, I'll check my email
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

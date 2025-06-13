@@ -40,13 +40,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, userData?: any) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: userData
       }
     });
+
+    // If signup was successful and user needs email confirmation
+    if (data.user && !data.user.email_confirmed_at) {
+      try {
+        // Send confirmation email via our edge function
+        const confirmationUrl = `${window.location.origin}/auth/confirm?token=${data.user.id}&email=${encodeURIComponent(email)}`;
+        
+        const response = await fetch('/api/send-confirmation-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            confirmationUrl: confirmationUrl,
+            name: userData?.full_name
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to send confirmation email');
+        }
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the signup if email sending fails
+      }
+    }
+
     return { data, error };
   };
 
