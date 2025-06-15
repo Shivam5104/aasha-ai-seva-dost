@@ -212,9 +212,9 @@ Would you like me to place this order for home delivery?`, 'prescription');
           </CardContent>
         )}
 
-        <CardContent className="flex-1 flex flex-col p-4 bg-white dark:bg-gray-900">
+        <CardContent className="flex-1 flex flex-col p-4 bg-white dark:bg-gray-900 rounded-b-2xl sm:rounded-b-lg overflow-x-hidden">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+          <div className="flex-1 overflow-y-auto space-y-3 mb-4 px-1">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80vw] sm:max-w-[80%] p-3 rounded-lg break-words ${

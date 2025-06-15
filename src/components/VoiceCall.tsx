@@ -449,19 +449,19 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* ElevenLabs API Key Inputs (Male/Female) */}
-          <Card className="bg-yellow-50 border-yellow-200">
+          <Card className="bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800">
             <CardContent className="p-4 space-y-3">
-              <h4 className="font-medium text-yellow-800">Premium Voice Experience</h4>
-              <p className="text-sm text-yellow-600">
+              <h4 className="font-medium text-yellow-900 dark:text-yellow-300">Premium Voice Experience</h4>
+              <p className="text-sm text-yellow-700 dark:text-yellow-200">
                 Add your ElevenLabs API keys for high-quality AI voices (separate for male/female).
               </p>
               <div className="space-y-2">
                 <div className="flex gap-2 items-center">
-                  <span className="min-w-[100px] font-medium">Male API Key</span>
+                  <span className="min-w-[100px] font-medium dark:text-yellow-300">Male API Key</span>
                   <input
                     type="password"
                     placeholder="Enter Male Doctor API key"
-                    className="flex-1 px-3 py-2 border rounded-lg"
+                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-100"
                     value={inputMaleApiKey}
                     onChange={(e) => setInputMaleApiKey(e.target.value)}
                   />
@@ -476,11 +476,11 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   </Button>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span className="min-w-[100px] font-medium">Female API Key</span>
+                  <span className="min-w-[100px] font-medium dark:text-yellow-300">Female API Key</span>
                   <input
                     type="password"
                     placeholder="Enter Female Doctor API key"
-                    className="flex-1 px-3 py-2 border rounded-lg"
+                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-100"
                     value={inputFemaleApiKey}
                     onChange={(e) => setInputFemaleApiKey(e.target.value)}
                   />
@@ -495,31 +495,33 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   </Button>
                 </div>
               </div>
-              <div className="text-xs text-yellow-800 pt-2">Keep your API keys private! <a href="https://elevenlabs.io/dashboard/api" target="_blank" rel="noopener noreferrer" className="underline">Regenerate API keys here</a></div>
+              <div className="text-xs text-yellow-800 dark:text-yellow-200 pt-2">
+                Keep your API keys private! <a href="https://elevenlabs.io/dashboard/api" target="_blank" rel="noopener noreferrer" className="underline">Regenerate API keys here</a>
+              </div>
             </CardContent>
           </Card>
 
           {/* Voice Query Feature Highlight */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 dark:from-violet-900 dark:to-blue-900 dark:border-purple-700">
             <CardContent className="p-4">
               <div className="text-center">
-                <h4 className="font-medium text-purple-800 mb-2">🎤 New: Voice Query Support</h4>
-                <p className="text-sm text-purple-600 mb-3">
+                <h4 className="font-medium text-purple-900 dark:text-purple-200 mb-2">🎤 New: Voice Query Support</h4>
+                <p className="text-sm text-purple-700 dark:text-purple-100 mb-3">
                   Our AI assistants can now listen to your health concerns and provide intelligent responses based on what you say.
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-white p-2 rounded">
+                  <div className="bg-white dark:bg-purple-800 p-2 rounded text-gray-700 dark:text-white">
                     <strong>Say:</strong> "I have fever"<br/>
-                    <em>AI responds with fever care</em>
+                    <em className="text-gray-600 dark:text-gray-200">AI responds with fever care</em>
                   </div>
-                  <div className="bg-white p-2 rounded">
+                  <div className="bg-white dark:bg-blue-800 p-2 rounded text-gray-700 dark:text-white">
                     <strong>Say:</strong> "Need medicine delivery"<br/>
-                    <em>Connects to pharmacy</em>
+                    <em className="text-gray-600 dark:text-gray-200">Connects to pharmacy</em>
                   </div>
                 </div>
-                <div className="bg-white p-2 rounded mt-2">
+                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded mt-2 text-gray-700 dark:text-gray-100">
                   <strong>Say:</strong> "Goodbye" or "Hang up"<br/>
-                  <em>To end the call</em>
+                  <em className="text-gray-600 dark:text-gray-200">To end the call</em>
                 </div>
               </div>
             </CardContent>

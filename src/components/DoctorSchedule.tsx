@@ -126,7 +126,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-3xl mx-auto px-2 sm:px-0"> {/* container center and padding */}
+    <div className="space-y-6 w-full max-w-3xl mx-auto px-2 sm:px-0">
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -184,56 +184,67 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
             </div>
           </div>
 
-          {/* Doctor Selection */}
+          {/* Doctor Selection - Revamped UI */}
           <div>
             <Label className="text-base font-medium dark:text-gray-200">Select Doctor</Label>
-            <div className="space-y-3 mt-2">
-              {doctors.map((doctor) => (
-                <Card 
-                  key={doctor.id}
-                  className={`cursor-pointer border-2 transition-all ${
-                    selectedDoctor === doctor.id ? 'border-orange-500 bg-orange-50 dark:bg-orange-900' : 'border-gray-200 dark:border-gray-700 dark:bg-gray-900'
-                  } ${!doctor.available ? 'opacity-60' : ''}`}
-                  onClick={() => doctor.available && setSelectedDoctor(doctor.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-800 rounded-full flex items-center justify-center">
-                          <User className="w-6 h-6 text-orange-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium dark:text-gray-100">{doctor.name}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{doctor.specialty}</p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs">⭐ {doctor.rating}</span>
-                            <span className="text-xs text-gray-500">{doctor.experience}</span>
-                            <span className="text-xs font-medium text-green-600">{doctor.fee}</span>
-                          </div>
-                          <div className="flex gap-1 mt-1 flex-wrap">
-                            {doctor.languages.map((lang, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs dark:bg-gray-700 dark:text-gray-100">
-                                {lang}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+            <div className="relative">
+              <div className="space-y-3 mt-2">
+                {doctors.map((doctor) => (
+                  <div key={doctor.id} className="flex items-stretch gap-3">
+                    {/* Doctor Card */}
+                    <div
+                      className={`flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-md border transition
+                        ${selectedDoctor === doctor.id ? 'border-orange-500 ring-2 ring-orange-400 dark:ring-orange-500' : 'border-gray-200 dark:border-gray-700'} 
+                        ${!doctor.available ? 'opacity-70' : ''}
+                        p-4 flex gap-3 items-center`}
+                      style={{ minWidth: 0 }}
+                      onClick={() => doctor.available && setSelectedDoctor(doctor.id)}
+                    >
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                        <User className="w-6 h-6 text-orange-600" />
                       </div>
-                      <div className="text-right self-end">
-                        <Badge 
-                          variant={doctor.available ? "default" : "secondary"}
-                          className={doctor.available ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200' : 'dark:bg-gray-700 dark:text-gray-100'}
-                        >
-                          {doctor.available ? 'Available' : 'Busy'}
-                        </Badge>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Next: {doctor.nextSlot}
-                        </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">{doctor.name}</div>
+                        <div className="text-xs text-gray-700 dark:text-gray-300">{doctor.specialty}</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs flex items-center gap-1"><span role="img" aria-label="star">⭐</span> {doctor.rating}</span>
+                          <span className="text-xs text-gray-500">{doctor.experience}</span>
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{doctor.fee}</span>
+                        </div>
+                        <div className="flex gap-1 mt-1 flex-wrap">
+                          {doctor.languages.map((lang, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="text-xs bg-gray-200 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                              {lang}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    {/* Status Tag (vertical alignment) */}
+                    <div className="flex flex-col items-center min-w-[66px] justify-center">
+                      <span
+                        className={`
+                          px-2 py-0.5 rounded-full text-xs font-semibold
+                          ${doctor.available ?
+                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300 dark:border-green-700'
+                          :
+                            'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border border-gray-300 dark:border-gray-700'
+                          }
+                        `}
+                      >
+                        {doctor.available ? 'Available' : 'Busy'}
+                      </span>
+                      <span className="text-[10px] text-gray-400 mt-1 text-center whitespace-nowrap">
+                        Next: <br />{doctor.nextSlot}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
