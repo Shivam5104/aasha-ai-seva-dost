@@ -73,17 +73,17 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
 
   if (appointmentBooked) {
     return (
-      <Card className="bg-green-50 border-green-200">
+      <Card className="bg-green-50 border-green-200 dark:bg-green-900 dark:border-green-700">
         <CardHeader>
-          <CardTitle className="text-green-800 flex items-center gap-2">
+          <CardTitle className="text-green-800 dark:text-green-300 flex items-center gap-2">
             <CheckCircle className="w-5 h-5" />
             Appointment Confirmed!
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Appointment Details</h3>
-            <div className="space-y-2 text-sm">
+          <div className="bg-white dark:bg-green-800 p-4 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Appointment Details</h3>
+            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-100">
               <div><strong>Appointment ID:</strong> APT-{Math.random().toString(36).substr(2, 8).toUpperCase()}</div>
               <div><strong>Doctor:</strong> {doctors.find(d => d.id === selectedDoctor)?.name}</div>
               <div><strong>Date & Time:</strong> {selectedDate} at {selectedTime}</div>
@@ -92,9 +92,9 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
             </div>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-800 mb-2">Before Your Appointment</h4>
-            <ul className="text-sm space-y-1 text-blue-700">
+          <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+            <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2">Before Your Appointment</h4>
+            <ul className="text-sm space-y-1 text-blue-700 dark:text-blue-200">
               <li>• Prepare a list of your symptoms and questions</li>
               <li>• Bring any previous medical reports or prescriptions</li>
               <li>• Arrive 15 minutes early for clinic visits</li>
@@ -102,7 +102,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
             </ul>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button className="flex-1">
               <Calendar className="w-4 h-4 mr-2" />
               Add to Calendar
@@ -126,14 +126,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="space-y-6 w-full max-w-3xl mx-auto px-2 sm:px-0"> {/* container center and padding */}
+      <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
             <Calendar className="w-5 h-5 text-orange-600" />
             Schedule Doctor Appointment
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Book same-day or scheduled consultations with qualified doctors in your area
           </p>
         </CardHeader>
@@ -141,41 +141,43 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
           {/* Patient Information */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="patientName">Patient Name</Label>
+              <Label htmlFor="patientName" className="dark:text-gray-200">Patient Name</Label>
               <Input
                 id="patientName"
                 placeholder="Enter patient name"
                 value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
+                className="dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
               />
             </div>
             <div>
-              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Label htmlFor="phoneNumber" className="dark:text-gray-200">Phone Number</Label>
               <Input
                 id="phoneNumber"
                 placeholder="+91 XXXXX XXXXX"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                className="dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
               />
             </div>
           </div>
 
           {/* Consultation Type */}
           <div>
-            <Label className="text-base font-medium">Consultation Type</Label>
-            <div className="grid grid-cols-3 gap-3 mt-2">
+            <Label className="text-base font-medium dark:text-gray-200">Consultation Type</Label>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
               {consultationTypes.map((type) => (
                 <Card 
                   key={type.id}
                   className={`cursor-pointer border-2 transition-all ${
-                    consultationType === type.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200'
+                    consultationType === type.id ? 'border-orange-500 bg-orange-50 dark:bg-orange-900' : 'border-gray-200 dark:border-gray-700 dark:bg-gray-900'
                   }`}
                   onClick={() => setConsultationType(type.id)}
                 >
                   <CardContent className="p-4 text-center">
                     <div className="flex justify-center mb-2">{type.icon}</div>
-                    <h4 className="font-medium text-sm">{type.label}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{type.price}</p>
+                    <h4 className="font-medium text-sm dark:text-gray-100">{type.label}</h4>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{type.price}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -184,47 +186,47 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
 
           {/* Doctor Selection */}
           <div>
-            <Label className="text-base font-medium">Select Doctor</Label>
+            <Label className="text-base font-medium dark:text-gray-200">Select Doctor</Label>
             <div className="space-y-3 mt-2">
               {doctors.map((doctor) => (
                 <Card 
                   key={doctor.id}
                   className={`cursor-pointer border-2 transition-all ${
-                    selectedDoctor === doctor.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200'
+                    selectedDoctor === doctor.id ? 'border-orange-500 bg-orange-50 dark:bg-orange-900' : 'border-gray-200 dark:border-gray-700 dark:bg-gray-900'
                   } ${!doctor.available ? 'opacity-60' : ''}`}
                   onClick={() => doctor.available && setSelectedDoctor(doctor.id)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-800 rounded-full flex items-center justify-center">
                           <User className="w-6 h-6 text-orange-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium">{doctor.name}</h4>
-                          <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                          <h4 className="font-medium dark:text-gray-100">{doctor.name}</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{doctor.specialty}</p>
                           <div className="flex items-center gap-3 mt-1">
                             <span className="text-xs">⭐ {doctor.rating}</span>
                             <span className="text-xs text-gray-500">{doctor.experience}</span>
                             <span className="text-xs font-medium text-green-600">{doctor.fee}</span>
                           </div>
-                          <div className="flex gap-1 mt-1">
+                          <div className="flex gap-1 mt-1 flex-wrap">
                             {doctor.languages.map((lang, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
+                              <Badge key={idx} variant="secondary" className="text-xs dark:bg-gray-700 dark:text-gray-100">
                                 {lang}
                               </Badge>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right self-end">
                         <Badge 
                           variant={doctor.available ? "default" : "secondary"}
-                          className={doctor.available ? 'bg-green-100 text-green-800' : ''}
+                          className={doctor.available ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200' : 'dark:bg-gray-700 dark:text-gray-100'}
                         >
                           {doctor.available ? 'Available' : 'Busy'}
                         </Badge>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           Next: {doctor.nextSlot}
                         </p>
                       </div>
@@ -238,18 +240,19 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
           {/* Date Selection */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="date">Preferred Date</Label>
+              <Label htmlFor="date" className="dark:text-gray-200">Preferred Date</Label>
               <Input
                 id="date"
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
+                className="dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
               />
             </div>
             <div>
-              <Label>Available Time Slots</Label>
-              <div className="grid grid-cols-3 gap-2 mt-2 max-h-32 overflow-y-auto">
+              <Label className="dark:text-gray-200">Available Time Slots</Label>
+              <div className="grid grid-cols-2 xs:grid-cols-3 gap-2 mt-2 max-h-32 overflow-y-auto">
                 {timeSlots.map((time) => (
                   <Button
                     key={time}
@@ -280,25 +283,25 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
       </Card>
 
       {/* Same Day Availability */}
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800">
         <CardHeader>
-          <CardTitle className="text-blue-800 flex items-center gap-2">
+          <CardTitle className="text-blue-800 dark:text-blue-300 flex items-center gap-2">
             <Clock className="w-5 h-5" />
             Same Day Appointments Available
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-blue-700 mb-4">
+          <p className="text-blue-700 dark:text-blue-200 mb-4">
             Emergency consultations and same-day checkups available. Our doctors can see you within 2-4 hours.
           </p>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">2-4 Hours</div>
-              <div className="text-sm text-blue-800">Same Day Appointment</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-200">2-4 Hours</div>
+              <div className="text-sm text-blue-800 dark:text-blue-100">Same Day Appointment</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">15+ Mins</div>
-              <div className="text-sm text-blue-800">Video Consultation</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-200">15+ Mins</div>
+              <div className="text-sm text-blue-800 dark:text-blue-100">Video Consultation</div>
             </div>
           </div>
         </CardContent>

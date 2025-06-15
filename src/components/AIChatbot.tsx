@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -169,14 +168,14 @@ Would you like me to place this order for home delivery?`, 'prescription');
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <Card className="flex-1 flex flex-col">
+    <div className="h-full flex flex-col w-full max-w-2xl mx-auto px-2 sm:px-0">
+      <Card className="flex-1 flex flex-col overflow-hidden">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-gray-900 dark:text-white">
             <MessageCircle className="w-5 h-5 text-blue-600" />
             AI Health Assistant
             {user && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-2 dark:bg-gray-700 dark:text-gray-100">
                 {user.name}
               </Badge>
             )}
@@ -204,6 +203,7 @@ Would you like me to place this order for home delivery?`, 'prescription');
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSignup()}
+                className="dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
               />
               <Button size="sm" onClick={handleSignup}>
                 Sign Up
@@ -212,15 +212,15 @@ Would you like me to place this order for home delivery?`, 'prescription');
           </CardContent>
         )}
 
-        <CardContent className="flex-1 flex flex-col p-4">
+        <CardContent className="flex-1 flex flex-col p-4 bg-white dark:bg-gray-900">
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto space-y-3 mb-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-lg ${
+                <div className={`max-w-[80vw] sm:max-w-[80%] p-3 rounded-lg break-words ${
                   message.sender === 'user' 
                     ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-800'
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
                 }`}>
                   <div className="whitespace-pre-wrap text-sm">{message.text}</div>
                   
@@ -228,13 +228,13 @@ Would you like me to place this order for home delivery?`, 'prescription');
                   {message.type === 'order_tracking' && user?.orderHistory?.length && (
                     <div className="mt-3 space-y-3">
                       {mockOrders.map((order) => (
-                        <div key={order.id} className="bg-white p-3 rounded-lg border">
+                        <div key={order.id} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-gray-800">Order #{order.id}</h4>
-                            <Badge className="bg-green-100 text-green-800">{order.status}</Badge>
+                            <h4 className="font-medium text-gray-800 dark:text-white">Order #{order.id}</h4>
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">{order.status}</Badge>
                           </div>
                           
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-100">
                             <div><strong>Medicine:</strong> {order.medicine}</div>
                             <div className="flex items-center gap-2">
                               <Truck className="w-4 h-4 text-blue-600" />
@@ -258,17 +258,17 @@ Would you like me to place this order for home delivery?`, 'prescription');
                           <div className="mt-3 space-y-1">
                             {order.trackingSteps.map((step, idx) => (
                               <div key={idx} className={`flex items-center gap-2 text-xs ${
-                                step.completed ? 'text-green-600' : 'text-gray-500'
+                                step.completed ? 'text-green-600 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'
                               }`}>
                                 <div className={`w-2 h-2 rounded-full ${
-                                  step.completed ? 'bg-green-500' : 'bg-gray-300'
+                                  step.completed ? 'bg-green-500 dark:bg-green-300' : 'bg-gray-300 dark:bg-gray-700'
                                 }`}></div>
                                 <span>{step.status} - {step.time}</span>
                               </div>
                             ))}
                           </div>
 
-                          <div className="mt-2 pt-2 border-t">
+                          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                             <Button size="sm" className="w-full">
                               <Phone className="w-3 h-3 mr-1" />
                               Call Delivery Partner
@@ -288,7 +288,7 @@ Would you like me to place this order for home delivery?`, 'prescription');
             
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 p-3 rounded-lg">
+                <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -344,7 +344,7 @@ Would you like me to place this order for home delivery?`, 'prescription');
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1"
+              className="flex-1 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
             />
             
             <Button onClick={handleSendMessage} size="sm" disabled={!inputMessage.trim()}>
@@ -353,17 +353,17 @@ Would you like me to place this order for home delivery?`, 'prescription');
           </div>
 
           {/* Customer Support - Fixed Layout */}
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-700">
             <div className="flex items-center gap-2 mb-3">
               <Phone className="w-4 h-4 text-blue-600" />
-              <h4 className="font-semibold text-blue-800 text-sm">24/7 Customer Support</h4>
+              <h4 className="font-semibold text-blue-800 dark:text-blue-200 text-sm">24/7 Customer Support</h4>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-600">Call us:</span>
-                  <a href="tel:+911800123567" className="text-sm font-medium text-green-700 hover:text-green-800">
+                  <span className="text-xs text-gray-600 dark:text-gray-200">Call us:</span>
+                  <a href="tel:+911800123567" className="text-sm font-medium text-green-700 dark:text-green-200 hover:text-green-800">
                     +91 1800-123-4567
                   </a>
                 </div>
@@ -371,15 +371,15 @@ Would you like me to place this order for home delivery?`, 'prescription');
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-600">Email us:</span>
-                  <a href="mailto:support@aashaaiseva.com" className="text-sm font-medium text-blue-700 hover:text-blue-800">
+                  <span className="text-xs text-gray-600 dark:text-gray-200">Email us:</span>
+                  <a href="mailto:support@aashaaiseva.com" className="text-sm font-medium text-blue-700 dark:text-blue-200 hover:text-blue-800">
                     support@aashaaiseva.com
                   </a>
                 </div>
               </div>
             </div>
-            <div className="mt-3 pt-2 border-t border-blue-200">
-              <p className="text-xs text-gray-600">Available in Hindi, English, and 15+ regional languages</p>
+            <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-700">
+              <p className="text-xs text-gray-600 dark:text-gray-200">Available in Hindi, English, and 15+ regional languages</p>
             </div>
           </div>
         </CardContent>
