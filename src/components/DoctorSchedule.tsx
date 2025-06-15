@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,7 +88,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
               <div><strong>Doctor:</strong> {doctors.find(d => d.id === selectedDoctor)?.name}</div>
               <div><strong>Date & Time:</strong> {selectedDate} at {selectedTime}</div>
               <div><strong>Type:</strong> {consultationTypes.find(t => t.id === consultationType)?.label}</div>
-              <div><strong>Fee:</strong> {doctors.find(d => d.id === selectedDoctor)?.fee}</div>
+              <div><strong>Fee:</strong> ₹100</div>
             </div>
           </div>
 
@@ -275,7 +274,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
             size="lg"
           >
             <Calendar className="w-4 h-4 mr-2" />
-            Book Appointment - {selectedDoctor ? doctors.find(d => d.id === selectedDoctor)?.fee : '₹500'}
+            Book Appointment - ₹100
           </Button>
         </CardContent>
       </Card>
