@@ -28,6 +28,14 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [inputFemaleApiKey, setInputFemaleApiKey] = useState('');
   const isCallActiveRef = React.useRef(false);
 
+  // Automatically set male API key on mount if blank
+  React.useEffect(() => {
+    const defaultMaleKey = 'sk_df0d04ba0513406a1ddf25e897b0efb7ec503161bab4a6c8';
+    if (!maleApiKey) {
+      setMaleApiKey(defaultMaleKey);
+    }
+  }, [maleApiKey]);
+
   // Set all female doctors to broqrJkktxd1CclKTudW, and Sunita to Aria
   const voiceIds = {
     female: {
