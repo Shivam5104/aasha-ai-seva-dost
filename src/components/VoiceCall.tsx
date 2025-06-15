@@ -23,6 +23,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [userQuery, setUserQuery] = useState('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isElevenLabsActive, setIsElevenLabsActive] = useState(false);
+  const [maleApiKey, setMaleApiKey] = useState('');
+  const [femaleApiKey, setFemaleApiKey] = useState('');
+  const [inputMaleApiKey, setInputMaleApiKey] = useState('');
+  const [inputFemaleApiKey, setInputFemaleApiKey] = useState('');
 
   // Set all female doctors to broqrJkktxd1CclKTudW, and Sunita to Aria
   const voiceIds = {
@@ -136,8 +140,9 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
     // Play the intelligent response with explicit logging
     if (selectedStaff) {
+      setApiKeyByGender(selectedStaff);
       const voiceId = getVoiceId(selectedStaff);
-      setIsElevenLabsActive(!!apiKey);
+      setIsElevenLabsActive(!!ttsService.apiKey);
       console.log(`[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`);
       await ttsService.speak(response, voiceId);
     }
@@ -216,19 +221,59 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   ];
 
   const playWelcomeMessage = async (staff: any) => {
-    if (apiKey) {
-      ttsService.setApiKey(apiKey);
-      setIsElevenLabsActive(true);
-    } else {
-      setIsElevenLabsActive(false);
-    }
+    setApiKeyByGender(staff);
 
     const voiceId = getVoiceId(staff);
-
-    // Log which TTS engine is active
-    console.log(`[TTS Debug] API Key set: ${!!apiKey}. Will use ${apiKey ? 'ElevenLabs' : 'Browser'} TTS.`);
-
+    console.log(`[TTS Debug] API Key set: ${!!ttsService.apiKey}. Will use ${ttsService.apiKey ? 'ElevenLabs' : 'Browser'} TTS.`);
     await ttsService.speak(staff.welcomeMessage, voiceId);
+  };
+
+  const handleUserQuery = async (query: string) => {
+    const lowerQuery = query.toLowerCase();
+    let response = '';
+
+    // Check if user wants to hang up the call - END INSTANTLY
+    if (lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') || 
+        lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
+        lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')) {
+      
+      // End the call immediately without any delay
+      endCall();
+      return;
+    }
+
+    // Intelligent response based on user query
+    if (lowerQuery.includes('medicine') || lowerQuery.includes('tablet') || lowerQuery.includes('capsule')) {
+      response = `I understand you need help with medicines. Let me connect you to our pharmacy specialist. They can help you with medicine availability, dosage instructions, and home delivery options. Please hold while I transfer your call.`;
+    } else if (lowerQuery.includes('doctor') || lowerQuery.includes('appointment') || lowerQuery.includes('consultation')) {
+      response = `You're looking for a doctor consultation. I can schedule an appointment for you with our available doctors. Would you prefer a video consultation or in-person visit? Please specify your preferred time and any specific medical concerns.`;
+    } else if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent') || lowerQuery.includes('pain')) {
+      response = `This sounds like it might be urgent. I'm immediately connecting you to our emergency medical team. Please stay on the line and describe your symptoms clearly. If this is a life-threatening emergency, please also call 108.`;
+    } else if (lowerQuery.includes('delivery') || lowerQuery.includes('order') || lowerQuery.includes('track')) {
+      response = `I can help you with medicine delivery and order tracking. Let me check your recent orders and provide you with real-time delivery updates. May I have your order number or phone number to track your delivery?`;
+    } else if (lowerQuery.includes('fever') || lowerQuery.includes('cold') || lowerQuery.includes('headache')) {
+      response = `I understand you're experiencing ${lowerQuery.includes('fever') ? 'fever' : lowerQuery.includes('cold') ? 'cold symptoms' : 'headache'}. Let me connect you to our medical team who can provide proper guidance and recommend appropriate treatment. Please describe your symptoms in detail.`;
+    } else {
+      response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
+    }
+
+    // Play the intelligent response with explicit logging
+    if (selectedStaff) {
+      setApiKeyByGender(selectedStaff);
+      const voiceId = getVoiceId(selectedStaff);
+      setIsElevenLabsActive(!!ttsService.apiKey);
+      console.log(`[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`);
+      await ttsService.speak(response, voiceId);
+    }
+
+    // Update call phase based on query
+    setTimeout(() => {
+      if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent')) {
+        setCallPhase('emergency');
+      } else {
+        setCallPhase('specialist_connecting');
+      }
+    }, 3000);
   };
 
   const playMenuOptions = async () => {
@@ -308,6 +353,25 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Adjusted TTS key selection
+  const setApiKeyByGender = (staff: any) => {
+    if (!staff) {
+      ttsService.setApiKey('');
+      setIsElevenLabsActive(false);
+      return;
+    }
+    if (staff.gender === 'female' && femaleApiKey) {
+      ttsService.setApiKey(femaleApiKey);
+      setIsElevenLabsActive(true);
+    } else if (staff.gender === 'male' && maleApiKey) {
+      ttsService.setApiKey(maleApiKey);
+      setIsElevenLabsActive(true);
+    } else {
+      ttsService.setApiKey('');
+      setIsElevenLabsActive(false);
+    }
   };
 
   if (isCallActive) {
@@ -449,7 +513,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       {/* Display visible warning if fallback TTS, only during an active call */}
       {isCallActive && !isElevenLabsActive && (
         <div className="bg-yellow-200 border-l-4 border-yellow-500 p-3 rounded mb-3 text-yellow-900 text-sm">
-          <b>Notice:</b> You are hearing your browser's built-in TTS voice (not ElevenLabs). Please add and save your ElevenLabs API Key above for authentic AI voice effects.
+          <b>Notice:</b> You are hearing your browser's built-in TTS voice (not ElevenLabs). Please add and save your ElevenLabs API Keys below for authentic AI voice effects.
         </div>
       )}
       <Card>
@@ -463,46 +527,56 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* ElevenLabs API Key Input */}
-          {!apiKey && (
-            <Card className="bg-yellow-50 border-yellow-200">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <h4 className="font-medium text-yellow-800">Premium Voice Experience</h4>
-                  <p className="text-sm text-yellow-600">
-                    Add your ElevenLabs API key for high-quality AI voices that can understand and respond to your queries
-                  </p>
-                  {showApiKeyInput ? (
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        placeholder="Enter ElevenLabs API key"
-                        className="flex-1 px-3 py-2 border rounded-lg"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                      />
-                      <Button onClick={() => {
-                        if (apiKey) {
-                          ttsService.setApiKey(apiKey);
-                          setShowApiKeyInput(false);
-                        }
-                      }}>
-                        Save
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowApiKeyInput(true)}
-                      size="sm"
-                    >
-                      Add API Key
-                    </Button>
-                  )}
+          {/* ElevenLabs API Key Inputs (Male/Female) */}
+          <Card className="bg-yellow-50 border-yellow-200">
+            <CardContent className="p-4 space-y-3">
+              <h4 className="font-medium text-yellow-800">Premium Voice Experience</h4>
+              <p className="text-sm text-yellow-600">
+                Add your ElevenLabs API keys for high-quality AI voices (separate for male/female).
+              </p>
+              <div className="space-y-2">
+                <div className="flex gap-2 items-center">
+                  <span className="min-w-[100px] font-medium">Male API Key</span>
+                  <input
+                    type="password"
+                    placeholder="Enter Male Doctor API key"
+                    className="flex-1 px-3 py-2 border rounded-lg"
+                    value={inputMaleApiKey}
+                    onChange={(e) => setInputMaleApiKey(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setMaleApiKey(inputMaleApiKey);
+                      setInputMaleApiKey('');
+                    }}
+                  >
+                    Save
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="flex gap-2 items-center">
+                  <span className="min-w-[100px] font-medium">Female API Key</span>
+                  <input
+                    type="password"
+                    placeholder="Enter Female Doctor API key"
+                    className="flex-1 px-3 py-2 border rounded-lg"
+                    value={inputFemaleApiKey}
+                    onChange={(e) => setInputFemaleApiKey(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setFemaleApiKey(inputFemaleApiKey);
+                      setInputFemaleApiKey('');
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+              <div className="text-xs text-yellow-800 pt-2">Keep your API keys private! <a href="https://elevenlabs.io/dashboard/api" target="_blank" rel="noopener noreferrer" className="underline">Regenerate API keys here</a></div>
+            </CardContent>
+          </Card>
 
           {/* Voice Query Feature Highlight */}
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
