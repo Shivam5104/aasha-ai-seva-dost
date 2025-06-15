@@ -21,9 +21,6 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [callPhase, setCallPhase] = useState('welcome');
   const [apiKey, setApiKey] = useState('');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [userQuery, setUserQuery] = useState('');
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isElevenLabsActive, setIsElevenLabsActive] = useState(false);
   const [maleApiKey, setMaleApiKey] = useState('');
   const [femaleApiKey, setFemaleApiKey] = useState('');
@@ -244,7 +241,6 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     userQuery,
     setUserQuery,
     handleUserQuery,
-    playWelcomeMessage,
     startListening,
     stopListening
   } = useVoiceAssistant({
