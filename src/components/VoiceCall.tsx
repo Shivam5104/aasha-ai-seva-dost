@@ -22,6 +22,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [isListening, setIsListening] = useState(false);
   const [userQuery, setUserQuery] = useState('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [isElevenLabsActive, setIsElevenLabsActive] = useState(false);
 
   // Set all female doctors to broqrJkktxd1CclKTudW, and Sunita to Aria
   const voiceIds = {
@@ -92,6 +93,18 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }
   };
 
+  // Helper to resolve and log voiceId & source
+  const getVoiceId = (staff: any) => {
+    let voiceId = 'broqrJkktxd1CclKTudW';
+    if (staff?.gender === 'female') {
+      voiceId = voiceIds.female[staff.name as keyof typeof voiceIds.female] || 'broqrJkktxd1CclKTudW';
+    } else if (staff?.gender === 'male') {
+      voiceId = voiceIds.male[staff.name as keyof typeof voiceIds.male] || 'eyVoIoi3vo6sJoHOKgAc';
+    }
+    console.log(`[TTS Debug] Using voiceId: ${voiceId} for staff: ${staff?.name}`);
+    return voiceId;
+  };
+
   const handleUserQuery = async (query: string) => {
     const lowerQuery = query.toLowerCase();
     let response = '';
@@ -121,12 +134,11 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
     }
 
-    // Play the intelligent response
+    // Play the intelligent response with explicit logging
     if (selectedStaff) {
-      const voiceId = selectedStaff.gender === 'female' 
-        ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
-        : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male];
-      
+      const voiceId = getVoiceId(selectedStaff);
+      setIsElevenLabsActive(!!apiKey);
+      console.log(`[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`);
       await ttsService.speak(response, voiceId);
     }
 
@@ -206,12 +218,16 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const playWelcomeMessage = async (staff: any) => {
     if (apiKey) {
       ttsService.setApiKey(apiKey);
+      setIsElevenLabsActive(true);
+    } else {
+      setIsElevenLabsActive(false);
     }
-    
-    const voiceId = staff.gender === 'female' 
-      ? voiceIds.female[staff.name as keyof typeof voiceIds.female]
-      : voiceIds.male[staff.name as keyof typeof voiceIds.male];
-    
+
+    const voiceId = getVoiceId(staff);
+
+    // Log which TTS engine is active
+    console.log(`[TTS Debug] API Key set: ${!!apiKey}. Will use ${apiKey ? 'ElevenLabs' : 'Browser'} TTS.`);
+
     await ttsService.speak(staff.welcomeMessage, voiceId);
   };
 
@@ -430,6 +446,12 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
   return (
     <div className="space-y-6">
+      {/* Display visible warning if fallback TTS, only during an active call */}
+      {isCallActive && !isElevenLabsActive && (
+        <div className="bg-yellow-200 border-l-4 border-yellow-500 p-3 rounded mb-3 text-yellow-900 text-sm">
+          <b>Notice:</b> You are hearing your browser's built-in TTS voice (not ElevenLabs). Please add and save your ElevenLabs API Key above for authentic AI voice effects.
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
