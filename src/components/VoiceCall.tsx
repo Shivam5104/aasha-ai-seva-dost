@@ -23,15 +23,16 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [userQuery, setUserQuery] = useState('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
-  // Updated Voice IDs including the new ones you specified
+  // Set all female doctors to broqrJkktxd1CclKTudW, and Sunita to Aria
   const voiceIds = {
     female: {
-      'Dr. Priya Sharma': 'broqrJkktxd1CclKTudW', // Your specified female voice
-      'Nurse Sunita': '9BWtsMINqrJLrRacOk9x', // Aria
+      'Dr. Priya Sharma': 'broqrJkktxd1CclKTudW', // Broqr female
+      'Nurse Sunita': '9BWtsMINqrJLrRacOk9x',     // Aria female (distinct from broqr)
+      // Add any other female doctors here as needed
     },
     male: {
-      'Dr. Rajesh Kumar': 'eyVoIoi3vo6sJoHOKgAc', // Your specified male voice
-      'Dr. Amit Patel': 'eyVoIoi3vo6sJoHOKgAc', // Same voice ID for both male doctors
+      'Dr. Rajesh Kumar': 'eyVoIoi3vo6sJoHOKgAc',
+      'Dr. Amit Patel': 'eyVoIoi3vo6sJoHOKgAc',
     }
   };
 
