@@ -109,16 +109,17 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     return voiceId;
   };
 
+  // KEEP ONLY THIS handleUserQuery:
   const handleUserQuery = async (query: string) => {
     const lowerQuery = query.toLowerCase();
     let response = '';
 
     // Check if user wants to hang up the call - END INSTANTLY
-    if (lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') || 
-        lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
-        lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')) {
-      
-      // End the call immediately without any delay
+    if (
+      lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') ||
+      lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
+      lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')
+    ) {
       endCall();
       return;
     }
@@ -138,12 +139,15 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
     }
 
-    // Play the intelligent response with explicit logging
+    // Play the intelligent response
     if (selectedStaff) {
       setApiKeyByGender(selectedStaff);
       const voiceId = getVoiceId(selectedStaff);
-      setIsElevenLabsActive(!!ttsService.apiKey);
-      console.log(`[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`);
+
+      // Use isElevenLabsActive (local state) instead of direct ttsService.apiKey access
+      console.log(
+        `[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`
+      );
       await ttsService.speak(response, voiceId);
     }
 
@@ -222,58 +226,18 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
   const playWelcomeMessage = async (staff: any) => {
     setApiKeyByGender(staff);
-
     const voiceId = getVoiceId(staff);
-    console.log(`[TTS Debug] API Key set: ${!!ttsService.apiKey}. Will use ${ttsService.apiKey ? 'ElevenLabs' : 'Browser'} TTS.`);
+    // Remove direct ttsService.apiKey access, use isElevenLabsActive or print based on effective key
+    let apiKeyUsed = '';
+    if (staff.gender === 'female') {
+      apiKeyUsed = femaleApiKey;
+    } else if (staff.gender === 'male') {
+      apiKeyUsed = maleApiKey;
+    }
+    console.log(
+      `[TTS Debug] API Key set: ${Boolean(apiKeyUsed)}. Will use ${apiKeyUsed ? 'ElevenLabs' : 'Browser'} TTS.`
+    );
     await ttsService.speak(staff.welcomeMessage, voiceId);
-  };
-
-  const handleUserQuery = async (query: string) => {
-    const lowerQuery = query.toLowerCase();
-    let response = '';
-
-    // Check if user wants to hang up the call - END INSTANTLY
-    if (lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') || 
-        lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
-        lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')) {
-      
-      // End the call immediately without any delay
-      endCall();
-      return;
-    }
-
-    // Intelligent response based on user query
-    if (lowerQuery.includes('medicine') || lowerQuery.includes('tablet') || lowerQuery.includes('capsule')) {
-      response = `I understand you need help with medicines. Let me connect you to our pharmacy specialist. They can help you with medicine availability, dosage instructions, and home delivery options. Please hold while I transfer your call.`;
-    } else if (lowerQuery.includes('doctor') || lowerQuery.includes('appointment') || lowerQuery.includes('consultation')) {
-      response = `You're looking for a doctor consultation. I can schedule an appointment for you with our available doctors. Would you prefer a video consultation or in-person visit? Please specify your preferred time and any specific medical concerns.`;
-    } else if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent') || lowerQuery.includes('pain')) {
-      response = `This sounds like it might be urgent. I'm immediately connecting you to our emergency medical team. Please stay on the line and describe your symptoms clearly. If this is a life-threatening emergency, please also call 108.`;
-    } else if (lowerQuery.includes('delivery') || lowerQuery.includes('order') || lowerQuery.includes('track')) {
-      response = `I can help you with medicine delivery and order tracking. Let me check your recent orders and provide you with real-time delivery updates. May I have your order number or phone number to track your delivery?`;
-    } else if (lowerQuery.includes('fever') || lowerQuery.includes('cold') || lowerQuery.includes('headache')) {
-      response = `I understand you're experiencing ${lowerQuery.includes('fever') ? 'fever' : lowerQuery.includes('cold') ? 'cold symptoms' : 'headache'}. Let me connect you to our medical team who can provide proper guidance and recommend appropriate treatment. Please describe your symptoms in detail.`;
-    } else {
-      response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
-    }
-
-    // Play the intelligent response with explicit logging
-    if (selectedStaff) {
-      setApiKeyByGender(selectedStaff);
-      const voiceId = getVoiceId(selectedStaff);
-      setIsElevenLabsActive(!!ttsService.apiKey);
-      console.log(`[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`);
-      await ttsService.speak(response, voiceId);
-    }
-
-    // Update call phase based on query
-    setTimeout(() => {
-      if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent')) {
-        setCallPhase('emergency');
-      } else {
-        setCallPhase('specialist_connecting');
-      }
-    }, 3000);
   };
 
   const playMenuOptions = async () => {
