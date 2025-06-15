@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, MapPin, Video, Phone, CheckCircle } from 'lucide-react';
+import DoctorCard from './DoctorCard';
+import ConsultationTypeCard from './ConsultationTypeCard';
 
 interface DoctorScheduleProps {
   language: string;
@@ -167,64 +169,28 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ language }) => {
             <Label className="text-base font-medium dark:text-gray-200">Consultation Type</Label>
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
               {consultationTypes.map((type) => (
-                <Card 
+                <ConsultationTypeCard
                   key={type.id}
-                  className={`cursor-pointer border-2 transition-all ${
-                    consultationType === type.id ? 'border-orange-500 bg-orange-50 dark:bg-orange-900' : 'border-gray-200 dark:border-gray-700 dark:bg-gray-900'
-                  }`}
-                  onClick={() => setConsultationType(type.id)}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div className="flex justify-center mb-2">{type.icon}</div>
-                    <h4 className="font-medium text-sm dark:text-gray-100">{type.label}</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{type.price}</p>
-                  </CardContent>
-                </Card>
+                  type={type}
+                  selected={consultationType === type.id}
+                  onSelect={setConsultationType}
+                />
               ))}
             </div>
           </div>
 
-          {/* Doctor Selection - Revamped UI */}
+          {/* Doctor Selection - Refactored */}
           <div>
             <Label className="text-base font-medium dark:text-gray-200">Select Doctor</Label>
             <div className="relative">
               <div className="space-y-3 mt-2">
                 {doctors.map((doctor) => (
                   <div key={doctor.id} className="flex items-stretch gap-3">
-                    {/* Doctor Card */}
-                    <div
-                      className={`flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-md border transition
-                        ${selectedDoctor === doctor.id ? 'border-orange-500 ring-2 ring-orange-400 dark:ring-orange-500' : 'border-gray-200 dark:border-gray-700'} 
-                        ${!doctor.available ? 'opacity-70' : ''}
-                        p-4 flex gap-3 items-center`}
-                      style={{ minWidth: 0 }}
-                      onClick={() => doctor.available && setSelectedDoctor(doctor.id)}
-                    >
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                        <User className="w-6 h-6 text-orange-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">{doctor.name}</div>
-                        <div className="text-xs text-gray-700 dark:text-gray-300">{doctor.specialty}</div>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs flex items-center gap-1"><span role="img" aria-label="star">⭐</span> {doctor.rating}</span>
-                          <span className="text-xs text-gray-500">{doctor.experience}</span>
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{doctor.fee}</span>
-                        </div>
-                        <div className="flex gap-1 mt-1 flex-wrap">
-                          {doctor.languages.map((lang, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="secondary"
-                              className="text-xs bg-gray-200 dark:bg-gray-700 dark:text-gray-100"
-                            >
-                              {lang}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Status Tag (vertical alignment) */}
+                    <DoctorCard
+                      doctor={doctor}
+                      selected={selectedDoctor === doctor.id}
+                      onSelect={setSelectedDoctor}
+                    />
                     <div className="flex flex-col items-center min-w-[66px] justify-center">
                       <span
                         className={`

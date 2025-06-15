@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, Camera, Upload, User, LogIn, Phone, Mail, MapPin, Truck, Clock, Navigation } from 'lucide-react';
 import { generateMedicalResponse } from '@/utils/medicalKnowledge';
 import LocationPermission from './LocationPermission';
+import ChatMessage from "./ChatMessage";
+import OrderTrackingCard from "./OrderTrackingCard";
 
 interface Message {
   id: string;
@@ -216,74 +218,20 @@ Would you like me to place this order for home delivery?`, 'prescription');
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto space-y-3 mb-4 px-1">
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80vw] sm:max-w-[80%] p-3 rounded-lg break-words ${
-                  message.sender === 'user' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-                }`}>
-                  <div className="whitespace-pre-wrap text-sm">{message.text}</div>
-                  
-                  {/* Order Tracking Display */}
-                  {message.type === 'order_tracking' && user?.orderHistory?.length && (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                orderTrackingContent={message.type === 'order_tracking' && user?.orderHistory?.length
+                  ? (
                     <div className="mt-3 space-y-3">
                       {mockOrders.map((order) => (
-                        <div key={order.id} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-gray-800 dark:text-white">Order #{order.id}</h4>
-                            <Badge className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">{order.status}</Badge>
-                          </div>
-                          
-                          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-100">
-                            <div><strong>Medicine:</strong> {order.medicine}</div>
-                            <div className="flex items-center gap-2">
-                              <Truck className="w-4 h-4 text-blue-600" />
-                              <span><strong>Delivery Partner:</strong> {order.partnerName}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-green-600" />
-                              <span>{order.partnerPhone}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-orange-600" />
-                              <span><strong>ETA:</strong> {order.estimatedTime}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Navigation className="w-4 h-4 text-purple-600" />
-                              <span><strong>Current Location:</strong> {order.currentLocation}</span>
-                            </div>
-                          </div>
-
-                          {/* Real-time Tracking Steps */}
-                          <div className="mt-3 space-y-1">
-                            {order.trackingSteps.map((step, idx) => (
-                              <div key={idx} className={`flex items-center gap-2 text-xs ${
-                                step.completed ? 'text-green-600 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'
-                              }`}>
-                                <div className={`w-2 h-2 rounded-full ${
-                                  step.completed ? 'bg-green-500 dark:bg-green-300' : 'bg-gray-300 dark:bg-gray-700'
-                                }`}></div>
-                                <span>{step.status} - {step.time}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                            <Button size="sm" className="w-full">
-                              <Phone className="w-3 h-3 mr-1" />
-                              Call Delivery Partner
-                            </Button>
-                          </div>
-                        </div>
+                        <OrderTrackingCard key={order.id} order={order} />
                       ))}
                     </div>
-                  )}
-                  
-                  <div className="text-xs mt-2 opacity-70">
-                    {message.timestamp.toLocaleTimeString()}
-                  </div>
-                </div>
-              </div>
+                  )
+                  : undefined
+                }
+              />
             ))}
             
             {isTyping && (
