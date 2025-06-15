@@ -138,7 +138,9 @@ const Index = () => {
         </div>
 
         {/* Healthcare Services Tabs */}
-        <HealthcareTabs language={language} />
+        <div className="mb-8 md:mb-12 px-0 sm:px-2">
+          <HealthcareTabs language={language} />
+        </div>
       </div>
     </div>
   );
