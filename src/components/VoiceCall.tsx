@@ -430,7 +430,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-2xl mx-auto px-2 sm:px-0">
       {/* Show warning only if active call & NOT using ElevenLabs for this operator */}
       {isCallActive && !isElevenLabsAvailableForCurrentStaff && (
         <div className="bg-yellow-200 border-l-4 border-yellow-500 p-3 rounded mb-3 text-yellow-900 text-sm">
@@ -443,7 +443,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             <Phone className="w-5 h-5 text-purple-600" />
             AI Voice Support - Speak Your Query
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Call our AI medical support team that can understand and respond to your voice queries in real-time. Just speak your health concerns naturally.
           </p>
         </CardHeader>
@@ -456,8 +456,8 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                 Add your ElevenLabs API keys for high-quality AI voices (separate for male/female).
               </p>
               <div className="space-y-2">
-                <div className="flex gap-2 items-center">
-                  <span className="min-w-[100px] font-medium dark:text-yellow-300">Male API Key</span>
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch">
+                  <span className="min-w-[100px] font-medium dark:text-yellow-300 flex items-center sm:block">Male API Key</span>
                   <input
                     type="password"
                     placeholder="Enter Male Doctor API key"
@@ -467,6 +467,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   />
                   <Button
                     size="sm"
+                    className="mt-2 sm:mt-0"
                     onClick={() => {
                       setMaleApiKey(inputMaleApiKey);
                       setInputMaleApiKey('');
@@ -475,8 +476,8 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                     Save
                   </Button>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <span className="min-w-[100px] font-medium dark:text-yellow-300">Female API Key</span>
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch">
+                  <span className="min-w-[100px] font-medium dark:text-yellow-300 flex items-center sm:block">Female API Key</span>
                   <input
                     type="password"
                     placeholder="Enter Female Doctor API key"
@@ -486,6 +487,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                   />
                   <Button
                     size="sm"
+                    className="mt-2 sm:mt-0"
                     onClick={() => {
                       setFemaleApiKey(inputFemaleApiKey);
                       setInputFemaleApiKey('');
@@ -509,7 +511,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
                 <p className="text-sm text-purple-700 dark:text-purple-100 mb-3">
                   Our AI assistants can now listen to your health concerns and provide intelligent responses based on what you say.
                 </p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div className="bg-white dark:bg-purple-800 p-2 rounded text-gray-700 dark:text-white">
                     <strong>Say:</strong> "I have fever"<br/>
                     <em className="text-gray-600 dark:text-gray-200">AI responds with fever care</em>
@@ -529,14 +531,15 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
           {/* Available Medical Staff */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">AI Voice Assistants (Enhanced Voices)</h3>
+            <h3 className="font-semibold text-lg mb-4 dark:text-white">AI Voice Assistants (Enhanced Voices)</h3>
             <div className="space-y-3">
               {availableOperators.map((operator, index) => (
                 <VoiceOperatorCard key={index} operator={operator} onStartCall={startCall} />
               ))}
             </div>
           </div>
-
+        
+          {/* Medicine Delivery Helpline */}
           <Card className="bg-orange-50 border-orange-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -559,6 +562,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             </CardContent>
           </Card>
 
+          {/* Emergency Medical Support */}
           <Card className="bg-red-50 border-red-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">

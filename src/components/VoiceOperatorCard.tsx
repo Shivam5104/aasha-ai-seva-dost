@@ -11,26 +11,28 @@ interface OperatorProps {
 }
 
 const VoiceOperatorCard: React.FC<OperatorProps> = ({ operator, onStartCall }) => (
-  <Card>
+  <Card className="w-full">
     <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 ${operator.gender === 'female' ? 'bg-pink-100' : 'bg-blue-100'} rounded-full flex items-center justify-center`}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 w-full min-w-0">
+          <div 
+            className={`w-12 h-12 flex-shrink-0 ${operator.gender === 'female' ? 'bg-pink-100' : 'bg-blue-100'} rounded-full flex items-center justify-center`}
+          >
             <User className={`w-6 h-6 ${operator.gender === 'female' ? 'text-pink-600' : 'text-blue-600'}`} />
           </div>
-          <div>
-            <h4 className="font-medium flex items-center gap-2">
+          <div className="min-w-0">
+            <h4 className="font-medium flex items-center gap-2 dark:text-white">
               {operator.name}
-              <Badge variant="outline" className="text-xs">
-                {operator.gender === 'female' ? '♀️' : '♂️'} AI Voice
-              </Badge>
+              <Badge variant="outline" className="text-xs">{operator.gender === 'female' ? '♀️' : '♂️'} AI Voice</Badge>
             </h4>
-            <p className="text-sm text-gray-600">{operator.specialty}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs">⭐ {operator.rating}</span>
-              <div className="flex gap-1">
+            <p className="text-sm text-gray-600 dark:text-gray-200">{operator.specialty}</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs flex items-center gap-1 text-yellow-700 dark:text-yellow-200">
+                ⭐ {operator.rating}
+              </span>
+              <div className="flex gap-1 flex-wrap">
                 {operator.languages.map((lang: string, idx: number) => (
-                  <Badge key={idx} variant="secondary" className="text-xs">
+                  <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 dark:bg-gray-700 dark:text-gray-100">
                     {lang}
                   </Badge>
                 ))}
@@ -38,22 +40,30 @@ const VoiceOperatorCard: React.FC<OperatorProps> = ({ operator, onStartCall }) =
             </div>
           </div>
         </div>
-        <div className="text-right">
+        {/* Controls */}
+        <div className="flex flex-col items-end min-w-[90px] w-full sm:w-auto space-y-2 sm:space-y-0">
           <Badge 
             variant={operator.status === 'Available' ? "default" : "secondary"}
-            className={operator.status === 'Available' ? 'bg-green-100 text-green-800' : ''}
+            className={
+              operator.status === 'Available'
+                ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 mb-2'
+                : 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 mb-2'
+            }
           >
             {operator.status}
           </Badge>
           {operator.status === 'Available' && (
             <Button 
-              size="sm" 
-              className="mt-2"
+              size="sm"
+              className="mt-0 whitespace-nowrap"
               onClick={() => onStartCall('voice_query', operator)}
             >
               <Phone className="w-3 h-3 mr-1" />
-              Call & Speak
+              Call &amp; Speak
             </Button>
+          )}
+          {operator.status !== 'Available' && (
+            <span className="text-xs text-gray-500 dark:text-gray-300 mt-2">Busy</span>
           )}
         </div>
       </div>
