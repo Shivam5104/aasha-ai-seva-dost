@@ -448,61 +448,6 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* ElevenLabs API Key Inputs (Male/Female) */}
-          <Card className="bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800">
-            <CardContent className="p-4 space-y-3">
-              <h4 className="font-medium text-yellow-900 dark:text-yellow-300">Premium Voice Experience</h4>
-              <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                Add your ElevenLabs API keys for high-quality AI voices (separate for male/female).
-              </p>
-              <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row gap-2 items-stretch">
-                  <span className="min-w-[100px] font-medium dark:text-yellow-300 flex items-center sm:block">Male API Key</span>
-                  <input
-                    type="password"
-                    placeholder="Enter Male Doctor API key"
-                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-100"
-                    value={inputMaleApiKey}
-                    onChange={(e) => setInputMaleApiKey(e.target.value)}
-                  />
-                  <Button
-                    size="sm"
-                    className="mt-2 sm:mt-0"
-                    onClick={() => {
-                      setMaleApiKey(inputMaleApiKey);
-                      setInputMaleApiKey('');
-                    }}
-                  >
-                    Save
-                  </Button>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 items-stretch">
-                  <span className="min-w-[100px] font-medium dark:text-yellow-300 flex items-center sm:block">Female API Key</span>
-                  <input
-                    type="password"
-                    placeholder="Enter Female Doctor API key"
-                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-100"
-                    value={inputFemaleApiKey}
-                    onChange={(e) => setInputFemaleApiKey(e.target.value)}
-                  />
-                  <Button
-                    size="sm"
-                    className="mt-2 sm:mt-0"
-                    onClick={() => {
-                      setFemaleApiKey(inputFemaleApiKey);
-                      setInputFemaleApiKey('');
-                    }}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
-              <div className="text-xs text-yellow-800 dark:text-yellow-200 pt-2">
-                Keep your API keys private! <a href="https://elevenlabs.io/dashboard/api" target="_blank" rel="noopener noreferrer" className="underline">Regenerate API keys here</a>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Voice Query Feature Highlight */}
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 dark:from-violet-900 dark:to-blue-900 dark:border-purple-700">
             <CardContent className="p-4">
