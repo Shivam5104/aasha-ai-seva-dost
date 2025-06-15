@@ -26,6 +26,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const [femaleApiKey, setFemaleApiKey] = useState('');
   const [inputMaleApiKey, setInputMaleApiKey] = useState('');
   const [inputFemaleApiKey, setInputFemaleApiKey] = useState('');
+  const isCallActiveRef = React.useRef(false);
 
   // Set all female doctors to broqrJkktxd1CclKTudW, and Sunita to Aria
   const voiceIds = {
@@ -120,9 +121,9 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   ];
 
   const playWelcomeMessage = async (staff: any) => {
+    if (!isCallActiveRef.current) return;
     setApiKeyByGender(staff);
     const voiceId = getVoiceId(staff);
-    // Remove direct ttsService.apiKey access, use isElevenLabsActive or print based on effective key
     let apiKeyUsed = '';
     if (staff.gender === 'female') {
       apiKeyUsed = femaleApiKey;
@@ -132,48 +133,66 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     console.log(
       `[TTS Debug] API Key set: ${Boolean(apiKeyUsed)}. Will use ${apiKeyUsed ? 'ElevenLabs' : 'Browser'} TTS.`
     );
-    await ttsService.speak(staff.welcomeMessage, voiceId);
+    try {
+      await ttsService.speak(staff.welcomeMessage, voiceId);
+    } catch (e) {
+      // Catch stopped call
+      return;
+    }
   };
 
   const playMenuOptions = async () => {
+    if (!isCallActiveRef.current) return;
     const menuMessage = "Thank you for sharing your concern. I am now ready to listen to your detailed query. Please speak clearly and tell me exactly what health issue you are facing so I can provide you with the most appropriate assistance.";
-    await ttsService.speak(menuMessage, selectedStaff ? 
-      (selectedStaff.gender === 'female' 
-        ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
-        : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male]
-      ) : 'broqrJkktxd1CclKTudW'
-    );
+    try {
+      await ttsService.speak(
+        menuMessage,
+        selectedStaff
+          ? (selectedStaff.gender === 'female'
+              ? voiceIds.female[selectedStaff.name as keyof typeof voiceIds.female]
+              : voiceIds.male[selectedStaff.name as keyof typeof voiceIds.male])
+          : 'broqrJkktxd1CclKTudW'
+      );
+    } catch (e) {
+      // catch stopped call
+      return;
+    }
   };
 
   const startCall = (type: string, staff?: any) => {
     setCallType(type);
     setSelectedStaff(staff);
     setIsCallActive(true);
+    isCallActiveRef.current = true;  // --- guard value ---
     setCallPhase('welcome');
-
     // Play welcome message
     if (staff) {
-      const timeout1 = setTimeout(() => playWelcomeMessage(staff), 1000);
+      const timeout1 = setTimeout(() => {
+        // GUARD: only run if call is still active
+        if (!isCallActiveRef.current) return;
+        playWelcomeMessage(staff);
+      }, 1000);
       timeouts.current.push(timeout1);
     }
-
     // Move to listening phase
     const timeout2 = setTimeout(() => {
+      if (!isCallActiveRef.current) return;
       setCallPhase('listening');
       if (staff) {
-        const t3 = setTimeout(() => playMenuOptions(), 500);
-        const t4 = setTimeout(() => startListening(), 3000);
+        const t3 = setTimeout(() => { if (isCallActiveRef.current) playMenuOptions(); }, 500);
+        const t4 = setTimeout(() => { if (isCallActiveRef.current) startListening(); }, 3000);
         timeouts.current.push(t3, t4);
       }
     }, 6000);
     timeouts.current.push(timeout2);
 
-    // Start call timer
+    // Start call timer as before
     callInterval.current = setInterval(() => {
       setCallDuration(prev => prev + 1);
     }, 1000);
 
     const timeout3 = setTimeout(() => {
+      if (!isCallActiveRef.current) return;
       setSupportRequest({
         requestId: `REQ-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
         type: type,
@@ -193,12 +212,15 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       clearInterval(callInterval.current);
       callInterval.current = null;
     }
-
+    isCallActiveRef.current = false; // --- block deferred TTS ---
     // Stop any speech synthesis/TTS immediately
     ttsService.stop();
+    // Extra browser TTS cancel for full safety (in rare cases, browser queue gets stuck)
+    if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
     // Stop speech recognition if active
     if (recognition) recognition.stop();
-
     // Reset all states instantly for instant hang up
     setIsCallActive(false);
     setCallDuration(0);
