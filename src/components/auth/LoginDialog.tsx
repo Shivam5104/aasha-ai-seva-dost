@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [lastEmail, setLastEmail] = useState<string>('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,15 +36,42 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Add resend confirmation email function
+  const resendConfirmationEmail = async () => {
+    setResending(true);
+    // Try calling the same signup logic, which will attempt to resend email
+    try {
+      const { data, error } = await signUp(lastEmail, formData.password, {
+        full_name: formData.fullName,
+        phone: formData.phone,
+        date_of_birth: formData.dateOfBirth,
+        gender: formData.gender,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode
+      });
+      if (error) {
+        toast.error("Could not resend email: " + error.message);
+      } else {
+        toast.success("Confirmation email resent to " + lastEmail);
+      }
+    } catch (err: any) {
+      toast.error("Resend failed. Please try again later.");
+      console.error("Resend confirmation error:", err);
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const { error } = await signIn(formData.email, formData.password);
-      
+
       if (error) {
-        if (error.message.includes('Email not confirmed')) {
+        if (error.message.toLowerCase().includes('email not confirmed')) {
           toast.error('Please check your email and click the confirmation link before signing in.');
         } else {
           toast.error(error.message);
@@ -54,6 +82,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
+      console.error("Sign-in error:", error);
     } finally {
       setLoading(false);
     }
@@ -73,15 +102,19 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         state: formData.state,
         pincode: formData.pincode
       });
-      
+
       if (error) {
         toast.error(error.message);
+        setEmailSent(false);
       } else {
         setEmailSent(true);
+        setLastEmail(formData.email);
         toast.success('Account created! Please check your email to confirm your account.');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
+      console.error("Signup error:", error);
+      setEmailSent(false);
     } finally {
       setLoading(false);
     }
@@ -107,7 +140,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             <h3 className="text-lg font-semibold mb-4">Confirmation Email Sent!</h3>
             
             <p className="text-gray-600 mb-6">
-              We've sent a confirmation email to <strong>{formData.email}</strong>. 
+              We've sent a confirmation email to <strong>{lastEmail}</strong>. 
               Please check your inbox and click the confirmation link to activate your account.
             </p>
 
@@ -128,9 +161,17 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 setEmailSent(false);
                 onOpenChange(false);
               }}
-              className="w-full"
+              className="w-full mb-3"
             >
               Got it, I'll check my email
+            </Button>
+            <Button
+              variant="outline"
+              disabled={resending}
+              onClick={resendConfirmationEmail}
+              className="w-full"
+            >
+              {resending ? "Resending..." : "Resend Confirmation Email"}
             </Button>
           </div>
         </DialogContent>
@@ -194,6 +235,19 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
+            {/* Show re-send confirmation if needed */}
+            <div className="text-sm text-center text-gray-500 mt-3">
+              Didn't get a confirmation email?{' '}
+              <Button
+                variant="link"
+                size="sm"
+                className="inline p-0 h-auto align-baseline"
+                disabled={resending}
+                onClick={resendConfirmationEmail}
+              >
+                Resend Email
+              </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="signup">
