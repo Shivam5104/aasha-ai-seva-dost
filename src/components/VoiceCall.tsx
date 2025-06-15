@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Phone, PhoneCall, Mic, MicOff, Volume2, Clock, User, MapPin, HelpCircle } from 'lucide-react';
 import { ttsService } from '@/services/textToSpeech';
+import VoiceOperatorCard from './VoiceOperatorCard';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 
 interface VoiceCallProps {
   language: string;
@@ -45,58 +47,6 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
   const timeouts = React.useRef<NodeJS.Timeout[]>([]);
   const callInterval = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize speech recognition with proper type handling
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognitionAPI = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      
-      if (SpeechRecognitionAPI) {
-        const recognitionInstance = new SpeechRecognitionAPI() as SpeechRecognition;
-        recognitionInstance.continuous = true;
-        recognitionInstance.interimResults = true;
-        recognitionInstance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
-
-        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
-          let finalTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
-            }
-          }
-          if (finalTranscript) {
-            setUserQuery(finalTranscript);
-            handleUserQuery(finalTranscript);
-          }
-        };
-
-        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error('Speech recognition error:', event.error);
-          setIsListening(false);
-        };
-
-        recognitionInstance.onend = () => {
-          setIsListening(false);
-        };
-
-        setRecognition(recognitionInstance);
-      }
-    }
-  }, [language]);
-
-  const startListening = () => {
-    if (recognition) {
-      setIsListening(true);
-      recognition.start();
-    }
-  };
-
-  const stopListening = () => {
-    if (recognition) {
-      setIsListening(false);
-      recognition.stop();
-    }
-  };
-
   // Helper to resolve and log voiceId & source
   const getVoiceId = (staff: any) => {
     let voiceId = 'broqrJkktxd1CclKTudW';
@@ -107,58 +57,6 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }
     console.log(`[TTS Debug] Using voiceId: ${voiceId} for staff: ${staff?.name}`);
     return voiceId;
-  };
-
-  // KEEP ONLY THIS handleUserQuery:
-  const handleUserQuery = async (query: string) => {
-    const lowerQuery = query.toLowerCase();
-    let response = '';
-
-    // Check if user wants to hang up the call - END INSTANTLY
-    if (
-      lowerQuery.includes('hang up') || lowerQuery.includes('end call') || lowerQuery.includes('disconnect') ||
-      lowerQuery.includes('bye') || lowerQuery.includes('goodbye') || lowerQuery.includes('thank you') ||
-      lowerQuery.includes('धन्यवाद') || lowerQuery.includes('फोन रखना') || lowerQuery.includes('कॉल खत्म')
-    ) {
-      endCall();
-      return;
-    }
-
-    // Intelligent response based on user query
-    if (lowerQuery.includes('medicine') || lowerQuery.includes('tablet') || lowerQuery.includes('capsule')) {
-      response = `I understand you need help with medicines. Let me connect you to our pharmacy specialist. They can help you with medicine availability, dosage instructions, and home delivery options. Please hold while I transfer your call.`;
-    } else if (lowerQuery.includes('doctor') || lowerQuery.includes('appointment') || lowerQuery.includes('consultation')) {
-      response = `You're looking for a doctor consultation. I can schedule an appointment for you with our available doctors. Would you prefer a video consultation or in-person visit? Please specify your preferred time and any specific medical concerns.`;
-    } else if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent') || lowerQuery.includes('pain')) {
-      response = `This sounds like it might be urgent. I'm immediately connecting you to our emergency medical team. Please stay on the line and describe your symptoms clearly. If this is a life-threatening emergency, please also call 108.`;
-    } else if (lowerQuery.includes('delivery') || lowerQuery.includes('order') || lowerQuery.includes('track')) {
-      response = `I can help you with medicine delivery and order tracking. Let me check your recent orders and provide you with real-time delivery updates. May I have your order number or phone number to track your delivery?`;
-    } else if (lowerQuery.includes('fever') || lowerQuery.includes('cold') || lowerQuery.includes('headache')) {
-      response = `I understand you're experiencing ${lowerQuery.includes('fever') ? 'fever' : lowerQuery.includes('cold') ? 'cold symptoms' : 'headache'}. Let me connect you to our medical team who can provide proper guidance and recommend appropriate treatment. Please describe your symptoms in detail.`;
-    } else {
-      response = `Thank you for calling Aasha AI Seva. I've noted your query: "${query}". Let me connect you to the most appropriate medical professional who can assist you with this specific concern. Please hold while I find the right specialist for you.`;
-    }
-
-    // Play the intelligent response
-    if (selectedStaff) {
-      setApiKeyByGender(selectedStaff);
-      const voiceId = getVoiceId(selectedStaff);
-
-      // Use isElevenLabsActive (local state) instead of direct ttsService.apiKey access
-      console.log(
-        `[TTS Debug] handleUserQuery: Speaking with voiceId ${voiceId}`
-      );
-      await ttsService.speak(response, voiceId);
-    }
-
-    // Update call phase based on query
-    setTimeout(() => {
-      if (lowerQuery.includes('emergency') || lowerQuery.includes('urgent')) {
-        setCallPhase('emergency');
-      } else {
-        setCallPhase('specialist_connecting');
-      }
-    }, 3000);
   };
 
   const supportTypes = [
@@ -337,6 +235,28 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
       setIsElevenLabsActive(false);
     }
   };
+
+  // Refactor: use the new hook for speech/TTS & voice selection
+  const {
+    recognition,
+    isListening,
+    setIsListening,
+    userQuery,
+    setUserQuery,
+    handleUserQuery,
+    playWelcomeMessage,
+    startListening,
+    stopListening
+  } = useVoiceAssistant({
+    language,
+    getVoiceId,
+    selectedStaff,
+    maleApiKey,
+    femaleApiKey,
+    setIsElevenLabsActive,
+    setCallPhase,
+    endCall,
+  });
 
   if (isCallActive) {
     return (
@@ -573,54 +493,7 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
             <h3 className="font-semibold text-lg mb-4">AI Voice Assistants (Enhanced Voices)</h3>
             <div className="space-y-3">
               {availableOperators.map((operator, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 ${operator.gender === 'female' ? 'bg-pink-100' : 'bg-blue-100'} rounded-full flex items-center justify-center`}>
-                          <User className={`w-6 h-6 ${operator.gender === 'female' ? 'text-pink-600' : 'text-blue-600'}`} />
-                        </div>
-                        <div>
-                          <h4 className="font-medium flex items-center gap-2">
-                            {operator.name}
-                            <Badge variant="outline" className="text-xs">
-                              {operator.gender === 'female' ? '♀️' : '♂️'} AI Voice
-                            </Badge>
-                          </h4>
-                          <p className="text-sm text-gray-600">{operator.specialty}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs">⭐ {operator.rating}</span>
-                            <div className="flex gap-1">
-                              {operator.languages.map((lang, idx) => (
-                                <Badge key={idx} variant="secondary" className="text-xs">
-                                  {lang}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge 
-                          variant={operator.status === 'Available' ? "default" : "secondary"}
-                          className={operator.status === 'Available' ? 'bg-green-100 text-green-800' : ''}
-                        >
-                          {operator.status}
-                        </Badge>
-                        {operator.status === 'Available' && (
-                          <Button 
-                            size="sm" 
-                            className="mt-2"
-                            onClick={() => startCall('voice_query', operator)}
-                          >
-                            <Phone className="w-3 h-3 mr-1" />
-                            Call & Speak
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <VoiceOperatorCard key={index} operator={operator} onStartCall={startCall} />
               ))}
             </div>
           </div>
