@@ -284,6 +284,17 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     endCall,
   });
 
+  // Helper: Is ElevenLabs TTS available for the current selected staff?
+  const isElevenLabsAvailableForCurrentStaff = React.useMemo(() => {
+    if (!isCallActive || !selectedStaff) return false;
+    if (selectedStaff.gender === 'female') {
+      return Boolean(femaleApiKey);
+    } else if (selectedStaff.gender === 'male') {
+      return Boolean(maleApiKey);
+    }
+    return false;
+  }, [isCallActive, selectedStaff, maleApiKey, femaleApiKey]);
+
   if (isCallActive) {
     return (
       <Card className="bg-blue-50 border-blue-200">
@@ -420,8 +431,8 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
 
   return (
     <div className="space-y-6">
-      {/* Display visible warning if fallback TTS, only during an active call */}
-      {isCallActive && !isElevenLabsActive && (
+      {/* Show warning only if active call & NOT using ElevenLabs for this operator */}
+      {isCallActive && !isElevenLabsAvailableForCurrentStaff && (
         <div className="bg-yellow-200 border-l-4 border-yellow-500 p-3 rounded mb-3 text-yellow-900 text-sm">
           <b>Notice:</b> You are hearing your browser's built-in TTS voice (not ElevenLabs). Please add and save your ElevenLabs API Keys below for authentic AI voice effects.
         </div>
