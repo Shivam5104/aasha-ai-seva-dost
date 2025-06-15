@@ -35,6 +35,10 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     }
   };
 
+  // Track timeouts/intervals for cleanup
+  const timeouts = React.useRef<NodeJS.Timeout[]>([]);
+  const callInterval = React.useRef<NodeJS.Timeout | null>(null);
+
   // Initialize speech recognition with proper type handling
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -225,27 +229,30 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
     setSelectedStaff(staff);
     setIsCallActive(true);
     setCallPhase('welcome');
-    
+
     // Play welcome message
     if (staff) {
-      setTimeout(() => playWelcomeMessage(staff), 1000);
+      const timeout1 = setTimeout(() => playWelcomeMessage(staff), 1000);
+      timeouts.current.push(timeout1);
     }
-    
+
     // Move to listening phase
-    setTimeout(() => {
+    const timeout2 = setTimeout(() => {
       setCallPhase('listening');
       if (staff) {
-        setTimeout(() => playMenuOptions(), 500);
-        // Auto-start listening after menu
-        setTimeout(() => startListening(), 3000);
+        const t3 = setTimeout(() => playMenuOptions(), 500);
+        const t4 = setTimeout(() => startListening(), 3000);
+        timeouts.current.push(t3, t4);
       }
     }, 6000);
-    
-    const timer = setInterval(() => {
+    timeouts.current.push(timeout2);
+
+    // Start call timer
+    callInterval.current = setInterval(() => {
       setCallDuration(prev => prev + 1);
     }, 1000);
 
-    setTimeout(() => {
+    const timeout3 = setTimeout(() => {
       setSupportRequest({
         requestId: `REQ-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
         type: type,
@@ -254,14 +261,30 @@ const VoiceCall: React.FC<VoiceCallProps> = ({ language }) => {
         assignedTo: staff ? staff.name : 'Medical Team'
       });
     }, 3000);
+    timeouts.current.push(timeout3);
   };
 
   const endCall = () => {
+    // Instantly clear all timers and intervals
+    timeouts.current.forEach(clearTimeout);
+    timeouts.current = [];
+    if (callInterval.current) {
+      clearInterval(callInterval.current);
+      callInterval.current = null;
+    }
+
+    // Stop any speech synthesis/TTS immediately
+    ttsService.stop();
+    // Stop speech recognition if active
+    if (recognition) recognition.stop();
+
+    // Reset all states instantly for instant hang up
     setIsCallActive(false);
     setCallDuration(0);
     setCallPhase('welcome');
     setUserQuery('');
-    stopListening();
+    setIsListening(false);
+    setSupportRequest(null);
   };
 
   const formatTime = (seconds: number) => {
